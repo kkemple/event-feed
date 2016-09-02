@@ -70,13 +70,6 @@ const prodPlugins = [
 ]
 
 module.exports = {
-  // options for webpack-dev-server
-  devServer: {
-    contentBase: 'build/client',
-    historyApiFallback: true,
-    outputPath: path.join(__dirname, 'build/client')
-  },
-
   // inline-source-map makes devtools point to source files
   devtool: local ? 'inline-source-map' : false,
 
