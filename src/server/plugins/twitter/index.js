@@ -105,7 +105,7 @@ function getImageUrl (media: TweetMedia): string {
   return media.media_url || ''
 }
 
-function getTweetMedia (tweet: Tweet): TweetMedia {
+function getTweetMedia (tweet: Tweet): TweetMedia|typeof undefined {
   return tweet.extended_entities
     ? tweet.extended_entities.media[0]
     : undefined
@@ -144,7 +144,7 @@ function mapTweetToEvent (
     media: mapTwitterMediaToEventMedia(media),
     provider: 'twitter',
     published: publish,
-    timestamp: new Date(Date.now()).toISOString(),
+    timestamp: new Date().toISOString(),
     username: tweet.user.screen_name,
     viewed: false
   }
@@ -173,29 +173,28 @@ const plugin = {
   ) {
     const { events, settings } = server.plugins.orm
 
-    // settings are not constant, they are updated by admin
-    const config: SettingsSchema = await settings.fetch()
-    let { hashtags, publishers, autoPublishAll } = config
-
-    let from: Date = new Date(config.from)
-    let to: Date = new Date(config.to)
-
-    settings.onChange(data => {
-      const { new_val: newVal } = data
-
-      // update our config
-      from = new Date(newVal.from)
-      to = new Date(newVal.to)
-      hashtags = newVal.hashtags
-      publishers = newVal.publishers
-      autoPublishAll = newVal.autoPublishAll
-    })
-
     const client = new Twitter({
       access_token_key: options.accessToken,
       access_token_secret: options.accessSecret,
       consumer_key: options.consumerKey,
       consumer_secret: options.consumerSecret
+    })
+
+    // settings are not constant, they can be updated by admin
+    const config: SettingsSchema = await settings.fetch()
+    let { hashtags, publishers, autoPublishAll } = config
+    let from: Date = new Date(config.from)
+    let to: Date = new Date(config.to)
+
+    settings.onChange(data => {
+      const { new_val: config } = data
+
+      // update config
+      from = new Date(config.from)
+      to = new Date(config.to)
+      hashtags = config.hashtags
+      publishers = config.publishers
+      autoPublishAll = config.autoPublishAll
     })
 
     client.stream('statuses/filter', {
@@ -220,7 +219,7 @@ const plugin = {
         const timer: Date = new Date()
 
         try {
-          // check for publisher
+          // check for publisher for auto publishing
           const publisher:string = publishers.twitter
             .filter(p => p === tweet.user.screen_name)[0]
 

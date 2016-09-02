@@ -1,15 +1,11 @@
-const path = require('path')
-
 const autoprefixer = require('autoprefixer')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
-const CompressionWebpackPlugin = require('compression-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ExtractTextWebpackPlugin = require('extract-text-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const precss = require('precss')
 const webpack = require('webpack')
 
-const local = process.env.NODE_ENV === 'local'
 const production = process.env.NODE_ENV === 'production'
 
 // plugins for development builds only
@@ -47,12 +43,6 @@ const plugins = [
     template: 'src/client/index.ejs',
     inject: 'body',
     filename: 'index.html'
-  }),
-
-  new CompressionWebpackPlugin({
-    asset: '[path].gz',
-    algorithm: 'gzip',
-    test: /\.js$|\.html$/
   })
 ]
 
@@ -71,7 +61,7 @@ const prodPlugins = [
 
 module.exports = {
   // inline-source-map makes devtools point to source files
-  devtool: local ? 'inline-source-map' : false,
+  devtool: production ? false : 'inline-source-map',
 
   entry: './src/client/index.js',
 

@@ -117,7 +117,7 @@ server.register(plugins, error => {
     return
   }
 
-  logger('[register] plugins loaded successfully...', plugins)
+  logger('[register] plugins loaded successfully...')
 
   server.route([
     // register script path for app
@@ -127,8 +127,7 @@ server.register(plugins, error => {
       config: {
         handler: {
           directory: {
-            path: 'public',
-            lookupCompressed: true
+            path: 'public'
           }
         }
       }
