@@ -1,0 +1,6 @@
+[libs]
+src/
+
+[ignore]
+.*/node_modules/.*
+.*/build/.*
