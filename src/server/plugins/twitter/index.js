@@ -35,10 +35,7 @@ type HapiServer = {
       settings: SettingsModel
     }
   },
-  statsd: {
-    timing: (s: string, d: Date) => void,
-    increment: (s: string) => void
-  }
+  statsd: Statsd
 }
 
 type Logger = (s: string, ...a: any) => void
@@ -76,6 +73,11 @@ type SettingsModel = {
   update: (data: SettingsSchema) => Promise<Result>
 }
 
+type Statsd = {
+  timing: (s: string, d: Date) => void,
+  increment: (s: string) => void
+}
+
 type TweetMedia = {
   media_url: string,
   type: "photo"|"video",
@@ -97,6 +99,15 @@ type Tweet = {
   user: {
     screen_name: string
   }
+}
+
+type TwitterClient = {
+  stream: (endpoint: string, config: { track: string }) => TwitterStream
+}
+
+type TwitterStream = {
+  destroy: () => void,
+  on: (event: string, cb: (...a?: any) => void) => void
 }
 
 const logger: Logger = debug('server:plugins:twitter')
@@ -144,7 +155,7 @@ function mapTweetToEvent (
     media: mapTwitterMediaToEventMedia(media),
     provider: 'twitter',
     published: publish,
-    timestamp: new Date().toISOString(),
+    timestamp: new Date(parseInt(tweet.timestamp_ms, 10)).toISOString(),
     username: tweet.user.screen_name,
     viewed: false
   }
@@ -165,6 +176,63 @@ function mapTwitterMediaToEventMedia (media: TweetMedia): EventMediaSchema|null 
   }
 }
 
+function createStream (
+  config: SettingsSchema,
+  client: TwitterClient,
+  model: EventsModel,
+  statsd: Statsd
+): TwitterStream {
+  let stream: TwitterStream = client.stream('statuses/filter', {
+    track: config.hashtags.join(',')
+  })
+
+  stream.on('data', processTweet(config, model, statsd))
+  stream.on('error', (error) => logger('[stream] Error from stream: ', error))
+
+  return stream
+}
+
+function processTweet (
+  config: SettingsSchema,
+  model: EventsModel,
+  statsd: Statsd
+): (tweet: Tweet) => void {
+  const from = new Date(config.from)
+  const to = new Date(config.to)
+
+  return async (tweet: Tweet) => {
+    // if not within target time range don't process
+    const now: Date = new Date(parseInt(tweet.timestamp_ms, 10))
+    if (now < from || now > to) return
+
+    // don't process retweets
+    if (tweet.retweeted_status) return
+
+    // skip if no matched hashtags
+    if (!tweet.entities ||
+      !hasRequiredHashtag(config.hashtags, tweet.entities.hashtags)) return
+
+    logger('[processTweet] tweet received: ', JSON.stringify(tweet, null, 2))
+    statsd.increment('twitter.tweets')
+
+    const timer: Date = new Date()
+
+    try {
+      // check for publisher for auto publishing
+      const publisher: string = config.publishers.twitter
+        .filter(p => p === tweet.user.screen_name)[0]
+      const publish = !!publisher || config.autoPublishAll
+
+      await model.add(mapTweetToEvent(tweet, publish))
+
+      statsd.timing('twitter.parse', timer)
+    } catch (error) {
+      logger('[processTweet] error adding to database!', error)
+      statsd.increment('twitter.error')
+    }
+  }
+}
+
 const plugin = {
   async register (
     server: HapiServer,
@@ -173,7 +241,7 @@ const plugin = {
   ) {
     const { events, settings } = server.plugins.orm
 
-    const client = new Twitter({
+    const client: TwitterClient = new Twitter({
       access_token_key: options.accessToken,
       access_token_secret: options.accessSecret,
       consumer_key: options.consumerKey,
@@ -181,60 +249,19 @@ const plugin = {
     })
 
     // settings are not constant, they can be updated by admin
-    const config: SettingsSchema = await settings.fetch()
-    let { hashtags, publishers, autoPublishAll } = config
-    let from: Date = new Date(config.from)
-    let to: Date = new Date(config.to)
+    let config: SettingsSchema = await settings.fetch()
 
+    // stream is not constant, it can be changed by settings changes
+    let stream: TwitterStream = createStream(config, client, events, server.statsd)
+    logger('[stream] Stream connected, waiting for matching events...')
+
+    // reset stream on settings updates
     settings.onChange(data => {
       const { new_val: config } = data
 
-      // update config
-      from = new Date(config.from)
-      to = new Date(config.to)
-      hashtags = config.hashtags
-      publishers = config.publishers
-      autoPublishAll = config.autoPublishAll
-    })
-
-    client.stream('statuses/filter', {
-      track: hashtags.join(',')
-    }, (stream) => {
-      logger('[stream] Stream connected, waiting for matching events...')
-
-      stream.on('data', async (tweet: Tweet) => {
-        // if not within target time range don't process
-        const now: Date = new Date(parseInt(tweet.timestamp_ms, 10))
-        if (now < from || now > to) return
-
-        // don't process retweets
-        if (tweet.retweeted_status) return
-
-        // skip if no matched hashtags
-        if (!tweet.entities || !hasRequiredHashtag(hashtags, tweet.entities.hashtags)) return
-
-        logger('[stream] Event received: ', JSON.stringify(tweet, null, 2))
-        server.statsd.increment('twitter.tweets')
-
-        const timer: Date = new Date()
-
-        try {
-          // check for publisher for auto publishing
-          const publisher:string = publishers.twitter
-            .filter(p => p === tweet.user.screen_name)[0]
-
-          await events.add(mapTweetToEvent(tweet, !!publisher || autoPublishAll))
-
-          server.statsd.timing('twitter.parse', timer)
-        } catch (error) {
-          logger('[stream] error adding event to database!', error)
-          server.statsd.increment('twitter.error')
-        }
-      })
-
-      stream.on('error', (error: Error) => {
-        logger('[stream] Error from stream: ', error)
-      })
+      // reset strem
+      stream.destroy()
+      stream = createStream(config, client, events, server.statsd)
     })
 
     next()
