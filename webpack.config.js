@@ -19,7 +19,7 @@ const plugins = [
   new CleanWebpackPlugin('build/client'),
 
   // extract path is relative to publicPath `build/client`
-  new ExtractTextWebpackPlugin('public/css/app.css'),
+  new ExtractTextWebpackPlugin('public/css/app.[hash].css'),
 
   // copy over cache manifest
   new CopyWebpackPlugin([
@@ -109,8 +109,8 @@ module.exports = {
 
   // where to output, also naming conventions
   output: {
-    chunkFilename: '[name].js',
-    filename: 'public/js/app.js',
+    chunkFilename: '[name].[hash].js',
+    filename: 'public/js/app.[hash].js',
     path: 'build/client'
   },
 
