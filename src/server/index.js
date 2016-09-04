@@ -125,6 +125,10 @@ server.register(plugins, error => {
       method: 'GET',
       path: '/public/{path*}',
       config: {
+        cache: {
+          // assest file names are hashed so we can have long TTL
+          expiresIn: 1000 * 60 * 60 * 24 * 10
+        },
         handler: {
           directory: {
             path: 'public'
@@ -138,6 +142,10 @@ server.register(plugins, error => {
       method: 'GET',
       path: '/{path*}',
       config: {
+        cache: {
+          // shorter TTL for index.html
+          expiresIn: 1000 * 60 * 60 * 24
+        },
         handler: {
           file: 'index.html'
         }

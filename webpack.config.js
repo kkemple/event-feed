@@ -23,7 +23,7 @@ const plugins = [
 
   // copy over cache manifest
   new CopyWebpackPlugin([
-    { from: 'node_modules/normalize.css/normalize.css', to: 'public/css' }
+    { from: 'node_modules/normalize.css/normalize.css', to: 'public/css/normalize.css' }
   ]),
 
   // optimize chunk occurences
