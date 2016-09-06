@@ -1,6 +1,5 @@
 const autoprefixer = require('autoprefixer')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ExtractTextWebpackPlugin = require('extract-text-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const precss = require('precss')
@@ -20,11 +19,6 @@ const plugins = [
 
   // extract path is relative to publicPath `build/client`
   new ExtractTextWebpackPlugin('public/css/app.[hash].css'),
-
-  // copy over cache manifest
-  new CopyWebpackPlugin([
-    { from: 'node_modules/normalize.css/normalize.css', to: 'public/css/normalize.css' }
-  ]),
 
   // optimize chunk occurences
   new webpack.optimize.OccurenceOrderPlugin(),
@@ -60,6 +54,8 @@ const prodPlugins = [
 ]
 
 module.exports = {
+  debug: production ? false : true,
+
   // inline-source-map makes devtools point to source files
   devtool: production ? false : 'inline-source-map',
 

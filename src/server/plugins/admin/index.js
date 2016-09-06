@@ -28,11 +28,7 @@ type SettingsSchema = {
   autoPublishAll: boolean,
   from: Date,
   hashtags: Array<string>,
-  publishers: {
-    twitter: Array<string>,
-    facebook: Array<string>,
-    instagram: Array<string>
-  },
+  publishers: Array<string>,
   to: Date
 }
 

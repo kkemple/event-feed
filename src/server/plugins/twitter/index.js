@@ -58,11 +58,7 @@ type SettingsSchema = {
   autoPublishAll: boolean,
   from: Date,
   hashtags: Array<string>,
-  publishers: {
-    facebook: Array<string>,
-    instagram: Array<string>,
-    twitter: Array<string>
-  },
+  publishers: Array<string>,
   to: Date
 }
 
@@ -201,6 +197,8 @@ function processTweet (
   const to = new Date(config.to)
 
   return async (tweet: Tweet) => {
+    const timer: Date = new Date()
+
     // if not within target time range don't process
     const now: Date = new Date(parseInt(tweet.timestamp_ms, 10))
     if (now < from || now > to) return
@@ -215,11 +213,9 @@ function processTweet (
     logger('[processTweet] tweet received: ', JSON.stringify(tweet, null, 2))
     statsd.increment('twitter.tweets')
 
-    const timer: Date = new Date()
-
     try {
       // check for publisher for auto publishing
-      const publisher: string = config.publishers.twitter
+      const publisher: string = config.publishers
         .filter(p => p === tweet.user.screen_name)[0]
       const publish = !!publisher || config.autoPublishAll
 

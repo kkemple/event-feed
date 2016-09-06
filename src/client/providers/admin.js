@@ -23,11 +23,7 @@ type SettingsSchema = {
   autoPublishAll: boolean,
   from: Date,
   hashtags: Array<string>,
-  publishers: {
-    instagram: Array<string>,
-    twitter: Array<string>,
-    facebook: Array<string>
-  },
+  publishers: Array<string>,
   to: Date
 }
 
@@ -50,7 +46,13 @@ export default class AdminProvider extends Component {
     super(...arguments)
 
     this.handleEventsEvent = this.handleEventsEvent.bind(this)
+    this.handleEventAddedEvent = this.handleEventAddedEvent.bind(this)
+    this.handleEventRemovedEvent = this.handleEventRemovedEvent.bind(this)
+    this.handleEventUpdatedEvent = this.handleEventUpdatedEvent.bind(this)
+    this.handleSettingsEvent = this.handleSettingsEvent.bind(this)
+    this.handleSettingsUpdatedEvent = this.handleSettingsUpdatedEvent.bind(this)
     this.handleSocketConnection = this.handleSocketConnection.bind(this)
+    this.onSettingsUpdate = this.onSettingsUpdate.bind(this)
 
     this.socket = io()
     this.state = { events: [], settings: {} }
@@ -64,8 +66,9 @@ export default class AdminProvider extends Component {
     this.socket.on(constants.sockets.ADMIN_EVENT_ADDED, this.handleEventAddedEvent)
     this.socket.on(constants.sockets.ADMIN_EVENT_REMOVED, this.handleEventRemovedEvent)
     this.socket.on(constants.sockets.ADMIN_EVENT_UPDATED, this.handleEventUpdatedEvent)
+    this.socket.on(constants.sockets.ADMIN_SETTINGS, this.handleSettingsEvent)
+    this.socket.on(constants.sockets.ADMIN_SETTINGS_UPDATED, this.handleSettingsUpdatedEvent)
     this.socket.on(constants.sockets.CONNECTED_ADMIN, this.handleSocketConnection)
-    this.socket.on(constants.sockets.SETTINGS_UPDATED, this.handleSettingsUpdatedEvent)
 
     // request initial data
     window.requestAnimationFrame(() => {
@@ -80,21 +83,25 @@ export default class AdminProvider extends Component {
     this.socket.off(constants.sockets.ADMIN_EVENT_ADDED, this.handleEventAddedEvent)
     this.socket.off(constants.sockets.ADMIN_EVENT_REMOVED, this.handleEventRemovedEvent)
     this.socket.off(constants.sockets.ADMIN_EVENT_UPDATED, this.handleEventUpdatedEvent)
-    this.socket.off(constants.sockets.CONNECTED_ADMIN, this.handleSocketConnection)
+    this.socket.off(constants.sockets.ADMIN_SETTINGS, this.handleSettingsEvent)
     this.socket.off(constants.sockets.ADMIN_SETTINGS_UPDATED, this.handleSettingsUpdatedEvent)
+    this.socket.off(constants.sockets.CONNECTED_ADMIN, this.handleSocketConnection)
   }
 
   render (): void {
     const { events, settings } = this.state
-    return <AdminView events={events} settings={settings} />
+    return <AdminView
+      events={events}
+      settings={settings}
+      onSettingsUpdate={this.onSettingsUpdate} />
   }
 
-  handleEventsEvent (events): void {
+  handleEventsEvent (events: Array<EventSchema>): void {
     logger('[socket] incoming events...', events)
     this.setState({ events })
   }
 
-  handleEventAddedEvent (event): void {
+  handleEventAddedEvent (event: EventSchema): void {
     logger('[socket] event added...', event)
     const { events } = this.state
 
@@ -103,7 +110,7 @@ export default class AdminProvider extends Component {
     this.setState({ events })
   }
 
-  handleEventRemovedEvent (event): void {
+  handleEventRemovedEvent (event: EventSchema): void {
     logger('[socket] event added...', event)
     const { events } = this.state
 
@@ -112,7 +119,7 @@ export default class AdminProvider extends Component {
     this.setState({ events })
   }
 
-  handleEventUpdatedEvent (event): void {
+  handleEventUpdatedEvent (event: EventSchema): void {
     logger('[socket] event updated...', event)
     const { events } = this.state
 
@@ -121,7 +128,12 @@ export default class AdminProvider extends Component {
     this.setState({ events })
   }
 
-  handleSettingsUpdatedEvent (settings): void {
+  handleSettingsEvent (settings: SettingsSchema): void {
+    logger('[socket] incoming settings...', settings)
+    this.setState({ settings })
+  }
+
+  handleSettingsUpdatedEvent (settings: SettingsSchema): void {
     logger('[socket] settings updated...', settings)
 
     this.setState({ settings })
@@ -129,5 +141,11 @@ export default class AdminProvider extends Component {
 
   handleSocketConnection (): void {
     logger('[socket] connected to admin room, waiting for updates...')
+  }
+
+  onSettingsUpdate (newSettings: SettingsSchema): void {
+    logger('[socket] new settings...', newSettings)
+
+    this.socket.emit(constants.sockets.ADMIN_SETTINGS_UPDATE, newSettings)
   }
 }
