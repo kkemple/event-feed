@@ -61,7 +61,7 @@ h6 {
 }
 
 .app-header {
-  @mixin shadow-1;
+  @mixin shadow-2;
   align-items: center;
   background-color: white;
   display: flex;
@@ -94,7 +94,7 @@ h6 {
 }
 
 .settings-slideout {
-  @mixin shadow-2;
+  @mixin shadow-3;
   background-color: white;
   bottom: 0;
   display: flex;
@@ -125,7 +125,7 @@ h6 {
   }
 
   form {
-    border-top: 1px solid $primary-color; 
+    border-top: 1px solid $primary-color;
     clear: both;
     display: block;
     flex: 2;
@@ -172,6 +172,67 @@ h6 {
       padding: 10px;
       outline: none;
       text-transform: uppercase;
+    }
+  }
+}
+
+.admin-view {
+  .event-list {
+    align-items: stretch;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    padding: 20px;
+
+    .event-list-column {
+      max-width: 23%;
+    }
+
+    .event {
+      @mixin shadow-1;
+      background-color: white;
+      border: 1px solid #bdc3c7;
+      display: flex;
+      flex-flow: column nowrap;
+      margin-bottom: 15px;
+      width: 100%;
+
+      .lazy-load{
+        img {
+          width: 100%;
+          max-height: 300px;
+        }
+      }
+
+      blockquote {
+        align-items: space-around;
+        display: flex;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+        margin: 0;
+        padding: 15px;
+      }
+
+      .actions {
+        display: flex;
+        flex-flow: row nowrap;
+        justify-content: flex-end;
+        padding: 10px 15px;
+
+        .viewed,
+        .not-viewed {
+          cursor: default;
+          margin-right: auto;
+        }
+
+        span {
+          cursor: pointer;
+        }
+
+        img {
+          width: 20px;
+        }
+      }
     }
   }
 }

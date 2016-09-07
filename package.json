@@ -92,6 +92,7 @@
     "keymirror": "^0.1.1",
     "lodash.compact": "^3.0.1",
     "lodash.isequal": "^4.4.0",
+    "lodash.throttle": "^4.1.1",
     "moment": "^2.14.1",
     "normalize.css": "^4.2.0",
     "pino": "^2.8.3",

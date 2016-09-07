@@ -30,6 +30,13 @@ type EventsTable = {
   update: (data: EventSchema) => Promise<Result>
 }
 
+type FetchOptions = {
+  from: Date,
+  to: Date,
+  published: Boolean,
+  viewed: Boolean
+}
+
 type Logger = (s: string, ...a: any) => void
 
 type Row = {
@@ -76,7 +83,6 @@ export default class Events {
   async initChangeListener (): void {
     try {
       const cursor: Cursor = await this.events
-        .get('settings')
         .changes()
         .run(this.connection)
 
@@ -87,12 +93,9 @@ export default class Events {
     }
   }
 
-  async fetch (
-    from: Date,
-    to: Date,
-    published: Boolean,
-    viewed: Boolean
-  ): Promise<Array<EventSchema>> {
+  async fetch (options: FetchOptions): Promise<Array<EventSchema>> {
+    const { from, published, to, viewed } = options
+
     try {
       const timer: Date = new Date()
 
@@ -101,10 +104,11 @@ export default class Events {
       // create initial query by filtering within given range
       if (typeof from !== undefined && typeof to !== undefined) {
         query = query
-          .filter(event => event('timestamp').during(
-            r.ISO8601(from.toISOString()),
-            r.ISO8601(to.toISOString())
-          ))
+          .filter(event => r.ISO8601(event('timestamp'))
+            .during(
+              r.ISO8601(from),
+              r.ISO8601(to)
+            ))
       }
 
       if (typeof published !== 'undefined') {
@@ -172,7 +176,7 @@ export default class Events {
     try {
       const timer: Date = new Date()
 
-      const result: Result = this.events
+      const result: Result = await this.events
         .get(id)
         .update(data)
         .run(this.connection)

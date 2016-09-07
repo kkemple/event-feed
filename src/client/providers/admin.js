@@ -52,6 +52,9 @@ export default class AdminProvider extends Component {
     this.handleSettingsEvent = this.handleSettingsEvent.bind(this)
     this.handleSettingsUpdatedEvent = this.handleSettingsUpdatedEvent.bind(this)
     this.handleSocketConnection = this.handleSocketConnection.bind(this)
+    this.onPublish = this.onPublish.bind(this)
+    this.onUnpublish = this.onUnpublish.bind(this)
+    this.onRemove = this.onRemove.bind(this)
     this.onSettingsUpdate = this.onSettingsUpdate.bind(this)
 
     this.socket = io()
@@ -73,7 +76,6 @@ export default class AdminProvider extends Component {
     // request initial data
     window.requestAnimationFrame(() => {
       this.socket.emit(constants.sockets.ADMIN_SETTINGS_FETCH)
-      this.socket.emit(constants.sockets.ADMIN_EVENTS_FETCH)
     })
   }
 
@@ -93,16 +95,20 @@ export default class AdminProvider extends Component {
     return <AdminView
       events={events}
       settings={settings}
-      onSettingsUpdate={this.onSettingsUpdate} />
+      onPublish={this.onPublish}
+      onUnpublish={this.onUnpublish}
+      onRemove={this.onRemove}
+      onSettingsUpdate={this.onSettingsUpdate}
+    />
   }
 
   handleEventsEvent (events: Array<EventSchema>): void {
-    logger('[socket] incoming events...', events)
+    logger('[handleEventsEvent] incoming events...', events)
     this.setState({ events })
   }
 
   handleEventAddedEvent (event: EventSchema): void {
-    logger('[socket] event added...', event)
+    logger('[handleEventAddedEvent] event added...', event)
     const { events } = this.state
 
     events.push(event)
@@ -110,41 +116,63 @@ export default class AdminProvider extends Component {
     this.setState({ events })
   }
 
-  handleEventRemovedEvent (event: EventSchema): void {
-    logger('[socket] event added...', event)
+  handleEventRemovedEvent (id: string): void {
+    logger('[handleEventRemovedEvent] event removed...', id)
     const { events } = this.state
 
-    events.filter(e => e.id !== event.id)
+    const updatedEvents = events.filter(e => e.id !== id)
 
-    this.setState({ events })
+    this.setState({ events: updatedEvents })
   }
 
   handleEventUpdatedEvent (event: EventSchema): void {
-    logger('[socket] event updated...', event)
+    logger('[handleEventUpdatedEvent] event updated...', event)
     const { events } = this.state
 
-    events.forEach(e => { if (e.id === event.id) e = event })
+    const updatedEvents = events.map(e => e.id === event.id ? event : e)
 
-    this.setState({ events })
+    this.setState({ events: updatedEvents })
   }
 
   handleSettingsEvent (settings: SettingsSchema): void {
-    logger('[socket] incoming settings...', settings)
+    logger('[handleSettingsEvent] incoming settings...', settings)
+
     this.setState({ settings })
+
+    const { from, to } = settings
+    this.socket.emit(constants.sockets.ADMIN_EVENTS_FETCH, { from, to })
   }
 
   handleSettingsUpdatedEvent (settings: SettingsSchema): void {
-    logger('[socket] settings updated...', settings)
+    logger('[handleSettingsUpdatedEvent] settings updated...', settings)
 
     this.setState({ settings })
   }
 
   handleSocketConnection (): void {
-    logger('[socket] connected to admin room, waiting for updates...')
+    logger('[handleSocketConnection] connected to admin room, waiting for updates...')
+  }
+
+  onPublish (id: string): void {
+    logger('[onPublish] publishing event: %s', id)
+
+    this.socket.emit(constants.sockets.ADMIN_EVENT_PUBLISH, id)
+  }
+
+  onUnpublish (id: string): void {
+    logger('[onUnpublish] unpublishing event: %s', id)
+
+    this.socket.emit(constants.sockets.ADMIN_EVENT_UNPUBLISH, id)
+  }
+
+  onRemove (id: string): void {
+    logger('[onRemove] unpublishing event: %s', id)
+
+    this.socket.emit(constants.sockets.ADMIN_EVENT_REMOVE, id)
   }
 
   onSettingsUpdate (newSettings: SettingsSchema): void {
-    logger('[socket] new settings...', newSettings)
+    logger('[onSettingsUpdate] new settings...', newSettings)
 
     this.socket.emit(constants.sockets.ADMIN_SETTINGS_UPDATE, newSettings)
   }

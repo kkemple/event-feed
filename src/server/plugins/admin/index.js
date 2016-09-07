@@ -53,6 +53,7 @@ const plugin = {
 
         socket.on(constants.sockets.ADMIN_EVENTS_FETCH, async options => {
           try {
+            logger('[socket] received events fetch request', options)
             const data = await events.fetch(options)
             socket.emit(constants.sockets.ADMIN_EVENTS, data)
             logger('[socket] fetched events', options, data)

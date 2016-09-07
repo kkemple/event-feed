@@ -9,7 +9,9 @@ import { render } from 'react-dom'
 
 import App from './app'
 
-// expose debug module
-window.__d = debug
+// expose debug module if not production
+if (process.env.NODE_ENV !== 'production') {
+  window.__d = debug
+}
 
 render(<App />, document.getElementById('app'))

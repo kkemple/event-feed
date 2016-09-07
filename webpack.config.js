@@ -54,7 +54,7 @@ const prodPlugins = [
 ]
 
 module.exports = {
-  debug: production ? false : true,
+  debug: !production,
 
   // inline-source-map makes devtools point to source files
   devtool: production ? false : 'inline-source-map',

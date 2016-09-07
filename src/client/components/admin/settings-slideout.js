@@ -1,14 +1,13 @@
 import 'react-datepicker/dist/react-datepicker.css'
 
 import classnames from 'classnames'
-// import compact from 'lodash.compact'
 import isEqual from 'lodash.isequal'
 import moment from 'moment'
 import DatePicker from 'react-datepicker'
 import debug from 'debug'
 import React, { Component } from 'react'
 
-import clearIcon from '../assets/clear-icon.svg'
+import clearIcon from '../../assets/clear-icon.svg'
 
 type Logger = (s: string, ...a: any) => void
 
@@ -30,7 +29,7 @@ function mapPropsToState (props: SettingsSchema): SettingsSchema {
   }
 }
 
-const logger: Logger = debug('components:settings-slideout')
+const logger: Logger = debug('components:admin:settings-slideout')
 
 export default class SettingsSlideout extends Component {
   state: SettingsSchema

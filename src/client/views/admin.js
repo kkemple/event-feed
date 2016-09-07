@@ -1,9 +1,10 @@
 import debug from 'debug'
 import React, { Component } from 'react'
 
-import AdminHeader from '../components/admin-header'
-import SettingsToggle from '../components/settings-toggle'
-import SettingsSlideout from '../components/settings-slideout'
+import AdminHeader from '../components/admin/header'
+import EventList from '../components/admin/event-list'
+import SettingsToggle from '../components/admin/settings-toggle'
+import SettingsSlideout from '../components/admin/settings-slideout'
 
 type Logger = (s: string, ...a: any) => void
 
@@ -26,7 +27,14 @@ export default class AdminView extends Component {
 
   render (): void {
     const { settingsActive } = this.state
-    const { onSettingsUpdate, settings } = this.props
+    const {
+      events,
+      onPublish,
+      onUnpublish,
+      onRemove,
+      onSettingsUpdate,
+      settings
+    } = this.props
 
     return (
       <div className='admin-view'>
@@ -49,6 +57,14 @@ export default class AdminView extends Component {
           onToggle={this.onSettingsToggle}
           publishers={settings.publishers}
           to={settings.to}
+        />
+
+        <EventList
+          items={events}
+          classes={['admin']}
+          onPublish={onPublish}
+          onUnpublish={onUnpublish}
+          onRemove={onRemove}
         />
       </div>
     )

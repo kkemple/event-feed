@@ -2,11 +2,11 @@ import classnames from 'classnames'
 import debug from 'debug'
 import React, { Component } from 'react'
 
-import settingsIcon from '../assets/settings-icon.svg'
+import settingsIcon from '../../assets/settings-icon.svg'
 
 type Logger = (s: string, ...a: any) => void
 
-const logger: Logger = debug('components:settings-toggle')
+const logger: Logger = debug('components:admin:settings-toggle')
 
 export default class SettingsToggle extends Component {
   constructor (): void {
