@@ -1,4 +1,5 @@
 $primary-color: #9b59b6;
+$border-color: #bdc3c7;
 
 @define-mixin shadow-1 {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
@@ -19,6 +20,11 @@ $primary-color: #9b59b6;
 
 @define-mixin shadow-5 {
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3), 0 10px 10px rgba(0, 0, 0, 0.22);
+}
+
+@define-mixin shadow-2-reversed {
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.12), 0 -1px 2px rgba(0, 0, 0, 0.24);
+  transition: all 0.2s ease-in-out;
 }
 
 *,
@@ -67,6 +73,9 @@ h6 {
   display: flex;
   justify-content: space-between;
   padding: 10px;
+  position: fixed;
+  top: 0;
+  width: 100%;
 
   h1 {
     display: inline-block;
@@ -101,12 +110,12 @@ h6 {
   flex-flow: column nowrap;
   overflow: hidden;
   padding: 10px;
-  position: absolute;
+  position: fixed;
   top: 0;
   width: 300px;
   z-index: 2;
-  animate: transform .3s linear;
   transform: translateX(-300px);
+  transition: transform .1s linear;
 
   &.active {
     transform: translateX(0px);
@@ -177,6 +186,8 @@ h6 {
 }
 
 .admin-view {
+  padding-top: 100px;
+
   .event-list {
     align-items: stretch;
     display: flex;
@@ -191,7 +202,7 @@ h6 {
     .event {
       @mixin shadow-1;
       background-color: white;
-      border: 1px solid #bdc3c7;
+      /* border: 1px solid $border-color; */
       display: flex;
       flex-flow: column nowrap;
       margin-bottom: 15px;
@@ -234,5 +245,83 @@ h6 {
         }
       }
     }
+  }
+}
+
+.timeline-filter {
+  @mixin shadow-2-reversed;
+  align-items: center;
+  background-color: white;
+  bottom: 0;
+  display: flex;
+  flex-flow: row nowrap;
+  height: 80px;
+  justify-content: space-between;
+  align-items: flex-start;
+  left: 150px;
+  padding: 0;
+  position: fixed;
+  right: 150px;
+  transform: translateY(50px);
+  transition: transform .1s linear;
+
+  &:hover {
+    transform: translateY(0);
+  }
+
+  .handle {
+    background-color: $primary-color;
+    cursor: col-resize;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    width: 2px;
+    z-index: 3;
+
+    &.from {
+      left: 0;
+    }
+
+    &.to {
+      right: 0;
+    }
+  }
+
+  .marker {
+    background-color: $primary-color;
+    height: 20px;
+    margin: 0 auto;
+    width: 1px;
+
+    &.first {
+      display: none;
+    }
+
+    &.day-marker {
+      height: 40px;
+      position: relative;
+
+      span {
+        color: $primary-color;
+        display: block;
+        font-size: 10px;
+        margin-left: -100px;
+        margin-top: 5px;
+        position: absolute;
+        text-align: center;
+        text-transform: uppercase;
+        top: 100%;
+        width: 200px;
+      }
+    }
+  }
+
+  .filter-range-overlay {
+    background-color: $primary-color;
+    bottom: 0;
+    opacity: 0.1;
+    position: absolute;
+    z-index: 2;
+    top: 0;
   }
 }

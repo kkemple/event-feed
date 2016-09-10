@@ -5,6 +5,7 @@ import AdminHeader from '../components/admin/header'
 import EventList from '../components/admin/event-list'
 import SettingsToggle from '../components/admin/settings-toggle'
 import SettingsSlideout from '../components/admin/settings-slideout'
+import TimelineFilter from '../components/admin/timeline-filter'
 
 type Logger = (s: string, ...a: any) => void
 
@@ -29,6 +30,7 @@ export default class AdminView extends Component {
     const { settingsActive } = this.state
     const {
       events,
+      onEventsFetch,
       onPublish,
       onUnpublish,
       onRemove,
@@ -65,6 +67,12 @@ export default class AdminView extends Component {
           onPublish={onPublish}
           onUnpublish={onUnpublish}
           onRemove={onRemove}
+        />
+
+        <TimelineFilter
+          to={settings.to}
+          from={settings.from}
+          onEventsFetch={onEventsFetch}
         />
       </div>
     )

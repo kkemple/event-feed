@@ -5,6 +5,13 @@ import React, { Component } from 'react'
 
 import AdminView from '../views/admin'
 
+type EventFetchOptions = {
+  from: string,
+  to: string,
+  published: boolean,
+  viewed: boolean
+}
+
 type EventSchema = {
   content: string,
   media: {
@@ -52,6 +59,7 @@ export default class AdminProvider extends Component {
     this.handleSettingsEvent = this.handleSettingsEvent.bind(this)
     this.handleSettingsUpdatedEvent = this.handleSettingsUpdatedEvent.bind(this)
     this.handleSocketConnection = this.handleSocketConnection.bind(this)
+    this.onEventsFetch = this.onEventsFetch.bind(this)
     this.onPublish = this.onPublish.bind(this)
     this.onUnpublish = this.onUnpublish.bind(this)
     this.onRemove = this.onRemove.bind(this)
@@ -95,6 +103,7 @@ export default class AdminProvider extends Component {
     return <AdminView
       events={events}
       settings={settings}
+      onEventsFetch={this.onEventsFetch}
       onPublish={this.onPublish}
       onUnpublish={this.onUnpublish}
       onRemove={this.onRemove}
@@ -151,6 +160,12 @@ export default class AdminProvider extends Component {
 
   handleSocketConnection (): void {
     logger('[handleSocketConnection] connected to admin room, waiting for updates...')
+  }
+
+  onEventsFetch (options: EventFetchOptions): void {
+    logger('[onEventsFetch] fetching events with options: ', options)
+
+    this.socket.emit(constants.sockets.ADMIN_EVENTS_FETCH, options)
   }
 
   onPublish (id: string): void {
