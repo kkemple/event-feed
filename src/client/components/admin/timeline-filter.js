@@ -14,10 +14,18 @@ type State = {
   filterFromX: number,
   filterToX: number,
   from: moment,
-  to: moment
+  fromDraggablePosition: {
+    x: number,
+    y: number
+  },
+  to: moment,
+  toDraggablePosition: {
+    x: number,
+    y: number
+  }
 }
 
-type TimelineFilterProps = {
+type Props = {
   from: Date,
   to: Date
 }
@@ -33,7 +41,7 @@ const HOUR: number = 1000 * 60 * 60
 const logger: Logger = debug('client:components:admin:timeline-filter')
 
 // called during instantiation and when to and from props are updated
-function mapTimePropsToState (props: TimelineFilterProps): TimelineTimeState {
+function mapTimePropsToState (props: Props): TimelineTimeState {
   let { from, to } = props
 
   from = moment(from)
@@ -53,13 +61,13 @@ function mapTimePropsToState (props: TimelineFilterProps): TimelineTimeState {
 export default class TimelineFilter extends Component {
   state: State
 
-  constructor (props: TimelineFilterProps): void {
+  constructor (props: Props): void {
     super(props)
 
     this.fetchEvents = debounce(this.fetchEvents.bind(this), 250)
     this.handleFromDragEvent = this.handleFromDragEvent.bind(this)
     this.handleToDragEvent = this.handleToDragEvent.bind(this)
-    this.updateDimensions = debounce(this.updateDimensions.bind(this), 250)
+    this.updateDimensions = this.updateDimensions.bind(this)
 
     this.state = {
       ...mapTimePropsToState(props),
@@ -69,7 +77,11 @@ export default class TimelineFilter extends Component {
     }
   }
 
-  componentWillReceiveProps (nextProps: TimelineFilterProps): void {
+  shouldComponentUpdate (nextProps: Props, nextState: State) {
+    return !isEqual(this.props, nextProps) || !isEqual(this.state, nextState)
+  }
+
+  componentWillReceiveProps (nextProps: Props): void {
     const { containerWidth, from: currentFrom, to: currentTo } = this.state
     const { from: nextFrom, to: nextTo } = nextProps
 
@@ -80,15 +92,10 @@ export default class TimelineFilter extends Component {
     this.setState({
       ...mapTimePropsToState(nextProps),
       filterFromX: 0,
-      filterToX: containerWidth
-    })
-  }
-
-  shouldComponentUpdate (
-    nextProps: TimelineFilterProps,
-    nextState: State
-  ): boolean {
-    return !isEqual(this.props, nextProps) || !isEqual(this.state, nextState)
+      filterToX: containerWidth,
+      fromDraggablePosition: { x: 0, y: 0 },
+      toDraggablePosition: { x: 0, y: 0 }
+    }, () => this.fetchEvents())
   }
 
   componentDidMount (): void {
@@ -97,7 +104,9 @@ export default class TimelineFilter extends Component {
     this.setState({
       containerWidth: width,
       filterFromX: 0,
-      filterToX: width
+      filterToX: width,
+      fromDraggablePosition: { x: 0, y: 0 },
+      toDraggablePosition: { x: 0, y: 0 }
     })
 
     window.addEventListener('resize', this.updateDimensions)
@@ -109,7 +118,12 @@ export default class TimelineFilter extends Component {
 
   render (): void {
     const { classes } = this.props
-    const { filterFromX, filterToX } = this.state
+    const {
+      filterFromX,
+      filterToX,
+      fromDraggablePosition,
+      toDraggablePosition
+    } = this.state
 
     return (
       <div
@@ -119,16 +133,19 @@ export default class TimelineFilter extends Component {
         <Draggable
           axis='x'
           bounds={{ left: 0 }}
+          initialPosition={{ x: filterFromX }}
           onDrag={this.handleFromDragEvent}
-          initialPosition={{ x: filterFromX }}>
+          position={fromDraggablePosition}>
 
           <div className='handle from' />
         </Draggable>
+
         <Draggable
           axis='x'
           bounds={{ right: 0 }}
+          initialPosition={{ x: filterToX }}
           onDrag={this.handleToDragEvent}
-          initialPosition={{ x: filterToX }}>
+          position={toDraggablePosition}>
 
           <div className='handle to' />
         </Draggable>
@@ -201,6 +218,10 @@ export default class TimelineFilter extends Component {
   }
 
   fetchEvents (): void {
+    // get our action to fire once we calculate filtered timestamps
+    const { onFilterDateRange } = this.props
+
+    // get our state needed for calculations
     const {
       containerWidth,
       duration,
@@ -210,53 +231,81 @@ export default class TimelineFilter extends Component {
       to
     } = this.state
 
-    // get our action to fire once we calculate filtered timestamps
-    const { onEventsFetch } = this.props
-
     // get the percentages from the edges of the timeline slider
     const fromPercentageIncrease: number = filterFromX / containerWidth
     const toPercentageDecrease: number = (containerWidth - filterToX) / containerWidth
 
-    // if we have moved the from handle, calculate the percentage of time from 'from' we have moved to
+    // if we have moved the 'from' handle, calculate the percentage of time we have moved to
     const filteredFrom: Date = filterFromX > 0
       ? new Date(from.valueOf() + (duration * fromPercentageIncrease)).toISOString()
       : new Date(from.valueOf()).toISOString()
 
-    // if we have moved the to handle, calculate the percentage of time from 'to' we have moved to
+    // if we have moved the 'to' handle, calculate the percentage of time from 'to' we have moved to
     const filteredTo: Date = filterToX < containerWidth
       ? new Date(to.valueOf() - (duration * toPercentageDecrease)).toISOString()
       : new Date(to.valueOf()).toISOString()
 
-    // request events for new time range
-    onEventsFetch({ from: filteredFrom, to: filteredTo })
+    // call handler
+    onFilterDateRange({ from: filteredFrom, to: filteredTo })
   }
 
-  handleFromDragEvent (e, ui): void|false {
+  handleFromDragEvent (e, position): void|false {
     const { filterToX } = this.state
-    const filterFromX = ui.x
+    const { x } = position
+    const filterFromX = x
 
     // make sure we don't cross over the 'to' handle
     if (!(filterFromX < (filterToX - 5))) return false
 
     // once state is updated, fetch events
-    this.setState({ filterFromX }, () => this.fetchEvents())
+    this.setState({
+      filterFromX,
+      fromDraggablePosition: { x, y: 0 }
+    }, () => this.fetchEvents())
   }
 
-  handleToDragEvent (e, ui): void|false {
+  handleToDragEvent (e, position): void|false {
     const { containerWidth, filterFromX } = this.state
-    const filterToX = containerWidth - Math.abs(ui.x)
+    const x = Math.abs(position.x)
+
+    console.log({ x, position })
 
     // make sure we don't cross over the 'from' handle
-    if (filterToX < (filterFromX + 7)) return false
+    if (x > (containerWidth - filterFromX + 7)) return false
 
     // once state is updated, fetch events
-    this.setState({ filterToX }, () => this.fetchEvents())
+    this.setState({
+      filterToX: containerWidth - x,
+      toDraggablePosition: { x: -x, y: 0 }
+    }, () => this.fetchEvents())
   }
 
   updateDimensions (): void {
+    const {
+      containerWidth,
+      filterFromX,
+      filterToX,
+      fromDraggablePosition,
+      toDraggablePosition
+    } = this.state
+
     const { width } = this.container.getBoundingClientRect()
 
-    this.setState({ containerWidth: width })
+    // update slider positions
+    const widthPercentageDifference = width / containerWidth
+
+    const newFilterFromX = Math.round(filterFromX * widthPercentageDifference)
+    const newFilterToX = Math.round(filterToX * widthPercentageDifference)
+    const newFromDraggableX = Math.round(fromDraggablePosition.x * widthPercentageDifference)
+    const newToDraggableX = Math.round(toDraggablePosition.x * widthPercentageDifference)
+
+    this.setState({
+      containerWidth: width,
+      filterFromX: newFilterFromX,
+      filterToX: newFilterToX,
+      fromDraggablePosition: { x: newFromDraggableX, y: 0 },
+      toDraggablePosition: { x: newToDraggableX, y: 0 }
+    })
   }
 }
 

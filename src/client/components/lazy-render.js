@@ -40,7 +40,7 @@ class LazyRender extends Component {
     return (
       <div
         className='lazy-load'
-        ref={(ref) => { this.container = ref }}>
+        ref={ref => { this.container = ref }}>
 
           {visible ? children : null}
       </div>

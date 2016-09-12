@@ -30,7 +30,7 @@ export default class AdminView extends Component {
     const { settingsActive } = this.state
     const {
       events,
-      onEventsFetch,
+      onFilterDateRange,
       onPublish,
       onUnpublish,
       onRemove,
@@ -72,7 +72,7 @@ export default class AdminView extends Component {
         <TimelineFilter
           to={settings.to}
           from={settings.from}
-          onEventsFetch={onEventsFetch}
+          onFilterDateRange={onFilterDateRange}
         />
       </div>
     )

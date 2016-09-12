@@ -103,7 +103,7 @@ export default class SettingsSlideout extends Component {
               value={hashtags.join(', ')}
               placeholder='Comma separated list of hashtags'
               onChange={this.handleHashtagsChangeEvent}
-              ref={(ref) => { this.hashtags = ref }}
+              ref={ref => { this.hashtags = ref }}
             />
 
             <label>Auto Publishers (Do not include @):</label>
@@ -113,7 +113,7 @@ export default class SettingsSlideout extends Component {
               value={publishers.join(', ')}
               placeholder='Comma separated list of publishers'
               onChange={this.handlePublishersChangeEvent}
-              ref={(ref) => { this.publishers = ref }}
+              ref={ref => { this.publishers = ref }}
             />
 
             <label>Auto Publish All Events: </label>
@@ -121,7 +121,7 @@ export default class SettingsSlideout extends Component {
               type='checkbox'
               checked={autoPublishAll}
               onChange={this.handleAutoPublishAllChangeEvent}
-              ref={(ref) => { this.autoPublishAll = ref }}
+              ref={ref => { this.autoPublishAll = ref }}
             />
           </fieldset>
           <button type='submit'>Save</button>

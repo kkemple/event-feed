@@ -3,30 +3,60 @@ import React, { Component } from 'react'
 import LazyRender from '../lazy-render'
 import EventActions from './event-actions'
 
+const COLUMN_WIDTH = 400
+
 export default class EventList extends Component {
+  state: { containerWidth: number }
+
+  constructor (): void {
+    super(...arguments)
+
+    this.state = { containerWidth: 0 }
+    this.updateDimensions = this.updateDimensions.bind(this)
+  }
+
+  componentDidMount (): void {
+    const { width: containerWidth } = this.container.getBoundingClientRect()
+    this.setState({ containerWidth })
+    window.addEventListener('resize', this.updateDimensions)
+  }
+
+  componentWillUnmount (): void {
+    window.removeEventListener('resize', this.updateDimensions)
+  }
+
   render (): void {
     const { classes } = this.props
 
     return (
-      <ul className={`event-list ${classes.join(' ')}`}>
+      <div
+        className={`event-list ${classes.join(' ')}`}
+        ref={ref => { this.container = ref }}>
         {this.renderColumns()}
-      </ul>
+      </div>
     )
   }
 
   renderColumns (): Array<Component> {
+    const { containerWidth } = this.state
     const { items, onPublish, onUnpublish, onRemove } = this.props
+    const COLUMN_COUNT: number = containerWidth > 800
+      ? Math.floor(containerWidth / COLUMN_WIDTH)
+      : 1
 
-    const COLUMN_COUNT = 4
-    let remainder = items.length % COLUMN_COUNT
-    const numPerColumn = Math.floor(items.length / COLUMN_COUNT)
-    let i = 0
+    // get left over items so we can push onto columns later
+    let remainder: number = items.length % COLUMN_COUNT
 
+    // figure out how many items to drop into each column
+    const numPerColumn: number = Math.floor(items.length / COLUMN_COUNT)
+
+    // create copy of items so we can chunk them out into columns
     const itemsCopy = items.slice()
 
-    const columns = []
+    // create a mappable range for iterating our columns
+    const range: Array<number> = [...Array(COLUMN_COUNT).keys()]
 
-    for (; i < COLUMN_COUNT; i++) {
+    const columns: Array<Component> = range.map(i => {
       let numItemsToAdd = numPerColumn
 
       if (remainder > 0) {
@@ -36,10 +66,10 @@ export default class EventList extends Component {
 
       const columnItems = itemsCopy.splice(0, numItemsToAdd)
 
-      columns.push((
+      return (
         <div key={i} className='event-list-column'>
           {columnItems.map(ci => (
-            <li key={ci.id} className='event'>
+            <div key={ci.id} className='event'>
               {
                 ci.media
                   ? (
@@ -63,13 +93,18 @@ export default class EventList extends Component {
                 published={ci.published}
                 viewed={ci.viewed}
               />
-            </li>
+            </div>
           ))}
         </div>
-      ))
-    }
+      )
+    })
 
     return columns
+  }
+
+  updateDimensions (): void {
+    const { width: containerWidth } = this.container.getBoundingClientRect()
+    this.setState({ containerWidth })
   }
 }
 

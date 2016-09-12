@@ -186,17 +186,18 @@ h6 {
 }
 
 .admin-view {
-  padding-top: 100px;
+  padding-top: 120px;
 
   .event-list {
     align-items: stretch;
     display: flex;
     flex-flow: row nowrap;
-    justify-content: space-between;
+    justify-content: space-around;
     padding: 20px;
 
     .event-list-column {
-      max-width: 23%;
+      margin: 0 auto;
+      width: 380px;
     }
 
     .event {
@@ -222,6 +223,10 @@ h6 {
         justify-content: flex-start;
         margin: 0;
         padding: 15px;
+      }
+
+      p {
+        word-wrap: break-word;
       }
 
       .actions {
@@ -263,7 +268,7 @@ h6 {
   position: fixed;
   right: 150px;
   transform: translateY(50px);
-  transition: transform .1s linear;
+  transition: transform .15s linear;
 
   &:hover {
     transform: translateY(0);

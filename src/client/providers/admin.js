@@ -59,7 +59,7 @@ export default class AdminProvider extends Component {
     this.handleSettingsEvent = this.handleSettingsEvent.bind(this)
     this.handleSettingsUpdatedEvent = this.handleSettingsUpdatedEvent.bind(this)
     this.handleSocketConnection = this.handleSocketConnection.bind(this)
-    this.onEventsFetch = this.onEventsFetch.bind(this)
+    this.onFilterDateRange = this.onFilterDateRange.bind(this)
     this.onPublish = this.onPublish.bind(this)
     this.onUnpublish = this.onUnpublish.bind(this)
     this.onRemove = this.onRemove.bind(this)
@@ -103,7 +103,7 @@ export default class AdminProvider extends Component {
     return <AdminView
       events={events}
       settings={settings}
-      onEventsFetch={this.onEventsFetch}
+      onFilterDateRange={this.onFilterDateRange}
       onPublish={this.onPublish}
       onUnpublish={this.onUnpublish}
       onRemove={this.onRemove}
@@ -162,8 +162,8 @@ export default class AdminProvider extends Component {
     logger('[handleSocketConnection] connected to admin room, waiting for updates...')
   }
 
-  onEventsFetch (options: EventFetchOptions): void {
-    logger('[onEventsFetch] fetching events with options: ', options)
+  onFilterDateRange (options: EventFetchOptions): void {
+    logger('[onFilterDateRange] fetching events with options: ', options)
 
     this.socket.emit(constants.sockets.ADMIN_EVENTS_FETCH, options)
   }
