@@ -27,22 +27,30 @@ export default class EventActions extends Component {
       <div className='actions'>
         {
           viewed
-            ? <span className='viewed'>
+            ? (
+            <span className='viewed'>
               <img src={viewedIcon} />
             </span>
-            : <span className='not-viewed'>
+            )
+            : (
+            <span className='not-viewed'>
               <img src={notViewedIcon} />
             </span>
+            )
         }
 
         {
           published
-            ? <span className='published' onClick={this.handleUnpublishEvent}>
+            ? (
+            <span className='published' onClick={this.handleUnpublishEvent}>
               <img src={publishedIcon} />
             </span>
-            : <span className='publish' onClick={this.handlePublishEvent}>
+            )
+            : (
+            <span className='publish' onClick={this.handlePublishEvent}>
               <img src={publishIcon} />
             </span>
+            )
         }
         <span className='remove' onClick={this.handleRemoveEvent}>
           <img src={removeIcon} />

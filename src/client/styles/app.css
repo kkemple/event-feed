@@ -114,7 +114,7 @@ h6 {
   top: 0;
   width: 300px;
   z-index: 2;
-  transform: translateX(-300px);
+  transform: translateX(-320px);
   transition: transform .1s linear;
 
   &.active {
@@ -198,6 +198,10 @@ h6 {
     .event-list-column {
       margin: 0 auto;
       width: 380px;
+
+      @media screen and (max-width: 400px) {
+        width: 95vw;
+      }
     }
 
     .event {
@@ -223,6 +227,16 @@ h6 {
         justify-content: flex-start;
         margin: 0;
         padding: 15px;
+
+        cite a {
+          color: $primary-color;
+          transition: color .1s ease;
+          text-decoration: none;
+
+          &:hover {
+            color: #8e44ad;
+          }
+        }
       }
 
       p {
@@ -263,10 +277,10 @@ h6 {
   height: 80px;
   justify-content: space-between;
   align-items: flex-start;
-  left: 150px;
+  left: 5vw;
   padding: 0;
   position: fixed;
-  right: 150px;
+  right: 5vw;
   transform: translateY(50px);
   transition: transform .15s linear;
 
@@ -310,13 +324,17 @@ h6 {
         color: $primary-color;
         display: block;
         font-size: 10px;
-        margin-left: -100px;
+        margin-left: -5.5vw;
         margin-top: 5px;
         position: absolute;
         text-align: center;
         text-transform: uppercase;
         top: 100%;
-        width: 200px;
+        width: 11vw;
+
+        @media screen and (max-width: 400px) {
+          font-size: 8px;
+        }
       }
     }
   }

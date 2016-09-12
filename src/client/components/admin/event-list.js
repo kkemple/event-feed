@@ -82,7 +82,11 @@ export default class EventList extends Component {
 
               <blockquote>
                 <p>{ci.content}</p>
-                <cite>@{ci.username}</cite>
+                <cite>
+                  <a href={`https://twitter.com/${ci.username}`}>
+                    @{ci.username}
+                  </a>
+                </cite>
               </blockquote>
 
               <EventActions

@@ -62,17 +62,17 @@ export default class AdminView extends Component {
         />
 
         <EventList
-          items={events}
           classes={['admin']}
+          items={events}
           onPublish={onPublish}
           onUnpublish={onUnpublish}
           onRemove={onRemove}
         />
 
         <TimelineFilter
-          to={settings.to}
           from={settings.from}
           onFilterDateRange={onFilterDateRange}
+          to={settings.to}
         />
       </div>
     )

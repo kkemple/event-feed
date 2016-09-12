@@ -208,7 +208,7 @@ export default class TimelineFilter extends Component {
       return t.hour() === 0
         ? (
         <div key={i} className={classes}>
-          <span>{moment(t).format('ddd, Do hA')}</span>
+          <span>{moment(t).format('ddd, MMM Do')}</span>
         </div>
         )
         : (
