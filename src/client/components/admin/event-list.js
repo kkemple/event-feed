@@ -44,29 +44,26 @@ export default class EventList extends Component {
       ? Math.floor(containerWidth / COLUMN_WIDTH)
       : 1
 
-    // get left over items so we can push onto columns later
-    let remainder: number = items.length % COLUMN_COUNT
-
-    // figure out how many items to drop into each column
-    const numPerColumn: number = Math.floor(items.length / COLUMN_COUNT)
-
-    // create copy of items so we can chunk them out into columns
-    const itemsCopy = items.slice()
-
     // create a mappable range for iterating our columns
     const range: Array<number> = [...Array(COLUMN_COUNT).keys()]
 
-    const columns: Array<Component> = range.map(i => {
-      let numItemsToAdd = numPerColumn
+    // add items to columns
+    const itemsByColumn = range.map(i => [])
+    let columnIndex = 0
 
-      if (remainder > 0) {
-        numItemsToAdd++
-        remainder++
-      }
+    items.forEach(item => {
+      itemsByColumn[columnIndex].push(item)
 
-      const columnItems = itemsCopy.splice(0, numItemsToAdd)
+      if (columnIndex === COLUMN_COUNT - 1) columnIndex = 0
+      else columnIndex++
+    })
 
-      return (
+    // create react components
+    return range.map(i => {
+      const columnItems = itemsByColumn[i]
+
+      return columnItems.length
+        ? (
         <div key={i} className='event-list-column'>
           {columnItems.map(ci => (
             <div key={ci.id} className='event'>
@@ -101,9 +98,8 @@ export default class EventList extends Component {
           ))}
         </div>
       )
+      : null
     })
-
-    return columns
   }
 
   updateDimensions (): void {

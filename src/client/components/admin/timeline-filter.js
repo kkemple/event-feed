@@ -268,8 +268,6 @@ export default class TimelineFilter extends Component {
     const { containerWidth, filterFromX } = this.state
     const x = Math.abs(position.x)
 
-    console.log({ x, position })
-
     // make sure we don't cross over the 'from' handle
     if (x > (containerWidth - filterFromX + 7)) return false
 
