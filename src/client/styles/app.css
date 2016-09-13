@@ -193,7 +193,7 @@ h6 {
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-around;
-    padding: 20px;
+    padding: 20px 20px 60px;
 
     .event-list-column {
       margin: 0 auto;
@@ -236,6 +236,12 @@ h6 {
           &:hover {
             color: #8e44ad;
           }
+        }
+
+        .timestamp {
+          display: block;
+          font-size: 10;
+          color: #bdc3c7;
         }
       }
 

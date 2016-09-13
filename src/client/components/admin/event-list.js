@@ -1,9 +1,24 @@
+import moment from 'moment'
 import React, { Component } from 'react'
 
 import LazyRender from '../lazy-render'
 import EventActions from './event-actions'
 
+type FeedEvent = {
+  id: string,
+  media: {
+    type: "photo"|"video",
+    url: string
+  },
+  published: boolean,
+  viewed: boolean
+}
+
 const COLUMN_WIDTH = 400
+
+function sortItemsByTimestamp (a: FeedEvent, b: FeedEvent): boolean {
+  return moment(a.timestamp).isAfter(b.timestamp)
+}
 
 export default class EventList extends Component {
   state: { containerWidth: number }
@@ -51,12 +66,14 @@ export default class EventList extends Component {
     const itemsByColumn = range.map(i => [])
     let columnIndex = 0
 
-    items.forEach(item => {
-      itemsByColumn[columnIndex].push(item)
+    items
+      .sort(sortItemsByTimestamp)
+      .forEach(item => {
+        itemsByColumn[columnIndex].push(item)
 
-      if (columnIndex === COLUMN_COUNT - 1) columnIndex = 0
-      else columnIndex++
-    })
+        if (columnIndex === COLUMN_COUNT - 1) columnIndex = 0
+        else columnIndex++
+      })
 
     // create react components
     return range.map(i => {
@@ -78,6 +95,7 @@ export default class EventList extends Component {
               }
 
               <blockquote>
+                <span className='timestamp'>{moment(ci.timestamp).calendar()}</span>
                 <p>{ci.content}</p>
                 <cite>
                   <a href={`https://twitter.com/${ci.username}`}>
