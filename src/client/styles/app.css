@@ -324,13 +324,13 @@ h6 {
         color: $primary-color;
         display: block;
         font-size: 10px;
-        margin-left: -5.5vw;
+        margin-left: -6vw;
         margin-top: 5px;
         position: absolute;
         text-align: center;
         text-transform: uppercase;
         top: 100%;
-        width: 11vw;
+        width: 12vw;
 
         @media screen and (max-width: 400px) {
           font-size: 8px;
