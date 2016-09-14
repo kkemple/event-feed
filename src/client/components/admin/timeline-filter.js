@@ -5,10 +5,12 @@ import isEqual from 'lodash.isequal'
 import moment from 'moment'
 import React, { Component } from 'react'
 import Draggable from 'react-draggable'
+import TapAndPinchable from 'react-tappable'
 
 type Logger = (s: string, ...a: any) => void
 
 type State = {
+  containerLeft: number,
   containerWidth: number,
   duration: number,
   filterFromX: number,
@@ -66,11 +68,13 @@ export default class TimelineFilter extends Component {
 
     this.fetchEvents = debounce(this.fetchEvents.bind(this), 250)
     this.handleFromDragEvent = this.handleFromDragEvent.bind(this)
+    this.handleOverlayPinchEvent = this.handleOverlayPinchEvent.bind(this)
     this.handleToDragEvent = this.handleToDragEvent.bind(this)
     this.updateDimensions = this.updateDimensions.bind(this)
 
     this.state = {
       ...mapTimePropsToState(props),
+      containerLeft: 0,
       containerWidth: 0,
       filterFromX: 0,
       filterToX: 0
@@ -99,9 +103,10 @@ export default class TimelineFilter extends Component {
   }
 
   componentDidMount (): void {
-    const { width } = this.container.getBoundingClientRect()
+    const { width, left } = this.container.getBoundingClientRect()
 
     this.setState({
+      containerLeft: left,
       containerWidth: width,
       filterFromX: 0,
       filterToX: width,
@@ -165,10 +170,13 @@ export default class TimelineFilter extends Component {
     }
 
     return (
-      <div
-        className='filter-range-overlay'
-        style={styles}
-      />
+      <TapAndPinchable
+        onPinch={this.handleOverlayPinchEvent}>
+        <div
+          className='filter-range-overlay'
+          style={styles}
+        />
+      </TapAndPinchable>
     )
   }
 
@@ -264,6 +272,24 @@ export default class TimelineFilter extends Component {
     }, () => this.fetchEvents())
   }
 
+  handleOverlayPinchEvent (e, data): void|false {
+    const { containerLeft } = this.state
+    // console.log({...arguments})
+    const { pageX: fromX } = data.touches[0]
+    const { pageX: toX } = data.touches[1]
+    const distance = data.distance
+
+    // toDo: alphabetize
+
+    // once state is updated, fetch events
+    this.setState({
+      filterFromX: fromX - containerLeft,
+      fromDraggablePosition: { fromX, y: 0 },
+      filterToX: toX - containerLeft,
+      toDraggablePosition: { x: fromX + distance, y: 0 }
+    }, () => this.fetchEvents())
+  }
+
   handleToDragEvent (e, position): void|false {
     const { containerWidth, filterFromX } = this.state
     const x = Math.abs(position.x)
@@ -287,7 +313,7 @@ export default class TimelineFilter extends Component {
       toDraggablePosition
     } = this.state
 
-    const { width } = this.container.getBoundingClientRect()
+    const { width, left } = this.container.getBoundingClientRect()
 
     // update slider positions
     const widthPercentageDifference = width / containerWidth
@@ -299,6 +325,7 @@ export default class TimelineFilter extends Component {
 
     this.setState({
       containerWidth: width,
+      containerLeft: left,
       filterFromX: newFilterFromX,
       filterToX: newFilterToX,
       fromDraggablePosition: { x: newFromDraggableX, y: 0 },

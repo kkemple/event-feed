@@ -300,7 +300,7 @@ h6 {
     height: 100%;
     position: absolute;
     top: 0;
-    width: 2px;
+    width: 4px;
     z-index: 3;
 
     &.from {
