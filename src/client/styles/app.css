@@ -196,14 +196,16 @@ h6 {
     align-items: flex-start;
     display: flex;
     flex-flow: row nowrap;
-    justify-content: space-between;
+    justify-content: space-around;
     padding: 20px 3vw 60px;
 
     .event-list-column {
-      width: 400px;
+      width: 380px;
+      padding: 0 10px;
 
-      @media screen and (max-width: 440px) {
-        width: 96vw;
+      @media screen and (max-width: 400px) {
+        margin: 0 auto;
+        width: 100%;
       }
 
       .event {
@@ -212,8 +214,8 @@ h6 {
         background-color: white;
         display: flex;
         flex-flow: column nowrap;
-        margin: 0 auto 15px;
-        width: 380px;
+        margin: 0 0 15px;
+        width: 100%;
 
         img {
           width: 100%;
