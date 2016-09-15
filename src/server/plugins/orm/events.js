@@ -119,7 +119,7 @@ export default class Events {
         query = query.filter({ viewed })
       }
 
-      query = query.orderBy('timestamp')
+      query = query.orderBy(r.desc('timestamp'))
 
       const cursor: Cursor = await query.run(this.connection)
 
