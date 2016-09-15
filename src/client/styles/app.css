@@ -68,6 +68,7 @@ h6 {
 
 .app-header {
   @mixin shadow-2;
+
   align-items: center;
   background-color: white;
   display: flex;
@@ -104,6 +105,7 @@ h6 {
 
 .settings-slideout {
   @mixin shadow-3;
+
   background-color: white;
   bottom: 0;
   display: flex;
@@ -115,10 +117,10 @@ h6 {
   width: 300px;
   z-index: 2;
   transform: translateX(-320px);
-  transition: transform .1s linear;
+  transition: transform 0.1s linear;
 
   &.active {
-    transform: translateX(0px);
+    transform: translateX(0);
   }
 
   .close {
@@ -186,87 +188,82 @@ h6 {
 }
 
 .admin-view {
+  display: flex;
+  flex-flow: column nowrap;
   padding-top: 120px;
 
   .event-list {
-    align-items: stretch;
+    align-items: flex-start;
     display: flex;
     flex-flow: row nowrap;
-    justify-content: space-around;
-    padding: 20px 20px 60px;
+    justify-content: space-between;
+    padding: 20px 3vw 60px;
 
     .event-list-column {
-      margin: 0 auto;
-      width: 380px;
+      width: 400px;
 
-      @media screen and (max-width: 400px) {
-        width: 95vw;
-      }
-    }
+      .event {
+        @mixin shadow-1;
 
-    .event {
-      @mixin shadow-1;
-      background-color: white;
-      /* border: 1px solid $border-color; */
-      display: flex;
-      flex-flow: column nowrap;
-      margin-bottom: 15px;
-      width: 100%;
+        background-color: white;
+        display: flex;
+        flex-flow: column nowrap;
+        margin: 0 auto 15px;
+        width: 380px;
 
-      .lazy-load{
         img {
           width: 100%;
           max-height: 300px;
         }
-      }
 
-      blockquote {
-        align-items: space-around;
-        display: flex;
-        flex-flow: column nowrap;
-        justify-content: flex-start;
-        margin: 0;
-        padding: 15px;
+        blockquote {
+          align-items: space-around;
+          display: flex;
+          flex-flow: column nowrap;
+          justify-content: flex-start;
+          margin: 0;
+          padding: 15px;
 
-        cite a {
-          color: $primary-color;
-          transition: color .1s ease;
-          text-decoration: none;
+          cite a {
+            color: $primary-color;
+            text-decoration: none;
+            transition: color 0.1s ease;
 
-          &:hover {
-            color: #8e44ad;
+            &:hover {
+              color: #8e44ad;
+            }
+          }
+
+          .timestamp {
+            display: block;
+            font-size: 10;
+            color: #bdc3c7;
           }
         }
 
-        .timestamp {
-          display: block;
-          font-size: 10;
-          color: #bdc3c7;
-        }
-      }
-
-      p {
-        word-wrap: break-word;
-      }
-
-      .actions {
-        display: flex;
-        flex-flow: row nowrap;
-        justify-content: flex-end;
-        padding: 10px 15px;
-
-        .viewed,
-        .not-viewed {
-          cursor: default;
-          margin-right: auto;
+        p {
+          word-wrap: break-word;
         }
 
-        span {
-          cursor: pointer;
-        }
+        .actions {
+          display: flex;
+          flex-flow: row nowrap;
+          justify-content: flex-end;
+          padding: 10px 15px;
 
-        img {
-          width: 20px;
+          .viewed,
+          .not-viewed {
+            cursor: default;
+            margin-right: auto;
+          }
+
+          span {
+            cursor: pointer;
+          }
+
+          img {
+            width: 20px;
+          }
         }
       }
     }
@@ -275,20 +272,20 @@ h6 {
 
 .timeline-filter {
   @mixin shadow-2-reversed;
-  align-items: center;
+
+  align-items: flex-start;
   background-color: white;
   bottom: 0;
   display: flex;
   flex-flow: row nowrap;
   height: 80px;
   justify-content: space-between;
-  align-items: flex-start;
   left: 5vw;
   padding: 0;
   position: fixed;
   right: 5vw;
   transform: translateY(50px);
-  transition: transform .15s linear;
+  transition: transform 0.15s linear;
 
   &:hover {
     transform: translateY(0);
@@ -348,6 +345,7 @@ h6 {
   .filter-range-overlay {
     background-color: $primary-color;
     bottom: 0;
+    max-width: 100% !important;
     opacity: 0.1;
     position: absolute;
     z-index: 2;

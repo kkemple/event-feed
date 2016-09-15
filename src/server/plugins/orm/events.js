@@ -119,6 +119,8 @@ export default class Events {
         query = query.filter({ viewed })
       }
 
+      query = query.orderBy('timestamp')
+
       const cursor: Cursor = await query.run(this.connection)
 
       const events: Array<EventSchema> = await cursor.toArray()
