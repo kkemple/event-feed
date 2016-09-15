@@ -5,7 +5,7 @@ import isEqual from 'lodash.isequal'
 import moment from 'moment'
 import React, { Component } from 'react'
 import Draggable from 'react-draggable'
-import TapAndPinchable from 'react-tappable'
+import Pinchable from 'react-tappable/lib/Pinchable'
 
 type Logger = (s: string, ...a: any) => void
 
@@ -130,6 +130,8 @@ export default class TimelineFilter extends Component {
       toDraggablePosition
     } = this.state
 
+    console.log('hi')
+
     return (
       <div
         className={`timeline-filter ${classes.join(' ')}`}
@@ -170,13 +172,16 @@ export default class TimelineFilter extends Component {
     }
 
     return (
-      <TapAndPinchable
-        onPinch={this.handleOverlayPinchEvent}>
+      <Pinchable
+        onTap={this.handleOverlayPinchEvent}
+        onPinch={this.handleOverlayPinchEvent}
+        preventDefault={true}>
+
         <div
           className='filter-range-overlay'
           style={styles}
         />
-      </TapAndPinchable>
+      </Pinchable>
     )
   }
 
@@ -272,19 +277,20 @@ export default class TimelineFilter extends Component {
     }, () => this.fetchEvents())
   }
 
-  handleOverlayPinchEvent (e, data): void|false {
+  handleOverlayPinchEvent (e): void|false {
     const { containerLeft } = this.state
-    // console.log({...arguments})
-    const { pageX: fromX } = data.touches[0]
-    const { pageX: toX } = data.touches[1]
-    const distance = data.distance
+    console.log({...arguments})
+    console.log('hi')
+    const { pageX: fromX } = e.touches[0]
+    const { pageX: toX } = e.touches[1]
+    const distance = e.distance
 
     // toDo: alphabetize
 
     // once state is updated, fetch events
     this.setState({
       filterFromX: fromX - containerLeft,
-      fromDraggablePosition: { fromX, y: 0 },
+      fromDraggablePosition: { x: fromX, y: 0 },
       filterToX: toX - containerLeft,
       toDraggablePosition: { x: fromX + distance, y: 0 }
     }, () => this.fetchEvents())
