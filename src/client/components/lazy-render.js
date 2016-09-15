@@ -17,6 +17,8 @@ class LazyRender extends Component {
   }
 
   handleScrollEvent (): void {
+    if (!this.container) return
+
     const cutoff = window.innerHeight
     const { top } = this.container.getBoundingClientRect()
 
@@ -35,17 +37,21 @@ class LazyRender extends Component {
 
   render (): Component {
     const { visible } = this.state
-    const { children } = this.props
+    const { children, classes } = this.props
 
     return (
       <div
-        className='lazy-load'
+        className={`lazy-load ${classes.join(' ')}`}
         ref={ref => { this.container = ref }}>
 
           {visible ? children : null}
       </div>
     )
   }
+}
+
+LazyRender.defaultProps = {
+  classes: []
 }
 
 export default LazyRender

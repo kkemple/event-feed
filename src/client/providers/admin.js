@@ -81,10 +81,9 @@ export default class AdminProvider extends Component {
     this.socket.on(constants.sockets.ADMIN_SETTINGS_UPDATED, this.handleSettingsUpdatedEvent)
     this.socket.on(constants.sockets.CONNECTED_ADMIN, this.handleSocketConnection)
 
-    // request initial data
-    window.requestAnimationFrame(() => {
+    setTimeout(() => {
       this.socket.emit(constants.sockets.ADMIN_SETTINGS_FETCH)
-    })
+    }, 500)
   }
 
   componentWillUnmount (): void {
@@ -149,7 +148,9 @@ export default class AdminProvider extends Component {
     this.setState({ settings })
 
     const { from, to } = settings
-    this.socket.emit(constants.sockets.ADMIN_EVENTS_FETCH, { from, to })
+    setTimeout(() => {
+      this.socket.emit(constants.sockets.ADMIN_EVENTS_FETCH, { from, to })
+    }, 500)
   }
 
   handleSettingsUpdatedEvent (settings: SettingsSchema): void {
