@@ -157,8 +157,8 @@ export default class TimelineFilter extends Component {
           <div className='handle to' />
         </Draggable>
 
-        {this.renderMarkers()}
         {this.renderFilterRangeOverlay()}
+        {this.renderMarkers()}
       </div>
     )
   }
@@ -174,8 +174,7 @@ export default class TimelineFilter extends Component {
     return (
       <Pinchable
         onTap={this.handleOverlayPinchEvent}
-        onPinch={this.handleOverlayPinchEvent}
-        preventDefault={true}>
+        onPinchEnd={this.handleOverlayPinchEvent}>
 
         <div
           className='filter-range-overlay'
