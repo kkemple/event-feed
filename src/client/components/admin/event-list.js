@@ -1,60 +1,65 @@
-import moment from 'moment'
+import debounce from 'lodash.debounce'
+import isEqual from 'lodash.isequal'
 import React, { Component } from 'react'
 
-import LazyRender from '../lazy-render'
-import EventActions from './event-actions'
+import Event from './event'
 
-type FeedEvent = {
-  id: string,
-  media: {
-    type: "photo"|"video",
-    url: string
-  },
-  published: boolean,
-  viewed: boolean
+function mapPropsToState (
+  props: Object = {
+    items: []
+  }
+): Object {
+  return {
+    itemsToRender: props.items.slice(0, 50),
+    pageNumber: 1,
+    hasMoreItems: props.items.length > 50
+  }
 }
 
 const COLUMN_WIDTH = 400
 
-function sortItemsByTimestamp (a: FeedEvent, b: FeedEvent): boolean {
-  return moment(a.timestamp).isAfter(b.timestamp)
-}
-
 export default class EventList extends Component {
-  state: { containerWidth: number }
+  state: {
+    itemsToRender: Array<Object>,
+    pageNumber: number
+  }
 
-  constructor (): void {
-    super(...arguments)
+  constructor (props): void {
+    super(props)
 
-    this.state = { containerWidth: 0 }
+    this.handleScrollEvent = debounce(this.handleScrollEvent.bind(this), 50)
     this.updateDimensions = this.updateDimensions.bind(this)
+
+    this.state = {
+      ...mapPropsToState(props),
+      containerWidth: 0
+    }
   }
 
   componentDidMount (): void {
     const { width: containerWidth } = this.container.getBoundingClientRect()
     this.setState({ containerWidth })
+    window.addEventListener('scroll', this.handleScrollEvent)
     window.addEventListener('resize', this.updateDimensions)
   }
 
   componentWillUnmount (): void {
+    window.removeEventListener('scroll', this.handleScrollEvent)
     window.removeEventListener('resize', this.updateDimensions)
   }
 
-  render (): void {
-    const { classes } = this.props
-
-    return (
-      <div
-        className={`event-list ${classes.join(' ')}`}
-        ref={ref => { this.container = ref }}>
-        {this.renderColumns()}
-      </div>
-    )
+  componentWillReceiveProps (props: Object): void {
+    this.setState(mapPropsToState(props))
   }
 
-  renderColumns (): Array<Component> {
-    const { containerWidth } = this.state
-    const { items, onPublish, onUnpublish, onRemove } = this.props
+  shouldComponentUpdate (nextProps, nextState): boolean {
+    return !isEqual(this.props, nextProps) || !isEqual(this.state, nextState)
+  }
+
+  render (): void {
+    const { containerWidth, itemsToRender } = this.state
+    const { classes, onPublish, onUnpublish, onRemove } = this.props
+
     const COLUMN_COUNT: number = containerWidth > 800
       ? Math.floor(containerWidth / COLUMN_WIDTH)
       : 1
@@ -66,62 +71,60 @@ export default class EventList extends Component {
     const itemsByColumn = range.map(i => [])
     let columnIndex = 0
 
-    items
-      .sort(sortItemsByTimestamp)
-      .forEach(item => {
-        itemsByColumn[columnIndex].push(item)
+    itemsToRender.forEach(item => {
+      itemsByColumn[columnIndex].push(item)
 
-        if (columnIndex === COLUMN_COUNT - 1) columnIndex = 0
-        else columnIndex++
-      })
-
-    // create react components
-    return range.map(i => {
-      const columnItems = itemsByColumn[i]
-
-      return columnItems.length
-        ? (
-        <div key={i} className='event-list-column'>
-          {columnItems.map(ci => (
-            <div key={ci.id} className='event'>
-              {
-                ci.media
-                  ? (
-                  <LazyRender>
-                    <img src={ci.media.url} />
-                  </LazyRender>
-                  )
-                  : null
-              }
-
-              <blockquote>
-                <span className='timestamp'>{moment(ci.timestamp).calendar()}</span>
-                <p>{ci.content}</p>
-                <cite>
-                  <a href={`https://twitter.com/${ci.username}`}>
-                    @{ci.username}
-                  </a>
-                </cite>
-              </blockquote>
-
-              <EventActions
-                itemId={ci.id}
-                onPublish={onPublish}
-                onUnpublish={onUnpublish}
-                onRemove={onRemove}
-                published={ci.published}
-                viewed={ci.viewed}
-              />
-            </div>
-          ))}
-        </div>
-      )
-      : null
+      if (columnIndex === COLUMN_COUNT - 1) columnIndex = 0
+      else columnIndex++
     })
+
+    return (
+      <div
+        className={`event-list ${classes.join(' ')}`}
+        ref={ref => { this.container = ref }}>
+        {
+          range.map(i => {
+            return (
+              <div key={i} className='event-list-column'>
+                {
+                  itemsByColumn[i].map(e => (
+                    <Event
+                      key={e.id}
+                      event={e}
+                      onPublish={onPublish}
+                      onUnpublish={onUnpublish}
+                      onRemove={onRemove}
+                    />
+                  ))
+                }
+              </div>
+            )
+          })
+        }
+      </div>
+    )
+  }
+
+  handleScrollEvent (): void {
+    const { items } = this.props
+    const { itemsToRender, pageNumber, hasMoreItems } = this.state
+
+    if (!hasMoreItems) return
+
+    const { bottom, height } = this.container.getBoundingClientRect()
+
+    if (bottom <= height - 100) {
+      this.setState({
+        itemsToRender: itemsToRender.concat(items.slice(pageNumber * 50, pageNumber * 50 + 50)),
+        hasMoreItems: items.length > pageNumber * 50 + 50,
+        pageNumber: pageNumber + 1
+      })
+    }
   }
 
   updateDimensions (): void {
     const { width: containerWidth } = this.container.getBoundingClientRect()
+
     this.setState({ containerWidth })
   }
 }

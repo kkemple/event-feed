@@ -235,6 +235,8 @@ const plugin = {
     options: HapiPluginOptions,
     next: (e?: Error) => void
   ) {
+    if (process.env.PAUSE_TWITTER) return next()
+
     const { events, settings } = server.plugins.orm
 
     const client: TwitterClient = new Twitter({
