@@ -9,7 +9,7 @@ import pino from 'hapi-pino'
 import statsd from 'hapi-statsd'
 
 import admin from './plugins/admin'
-// import feed from './plugins/feed'
+import feed from './plugins/feed'
 import orm from './plugins/orm'
 import sockets from './plugins/sockets'
 import twitter from './plugins/twitter'
@@ -95,7 +95,7 @@ const plugins: Array<Plugin> = [
   { register: orm, options: ormOptions },
   { register: sockets },
   { register: admin },
-  // { register: feed },
+  { register: feed },
   { register: twitter, options: twitterOptions }
 ]
 

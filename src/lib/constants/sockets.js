@@ -20,11 +20,10 @@ export default keymirror({
   // feed events
   CONNET_FEED: null,
   CONNECTED_FEED: null,
+  FEED_EVENT_ADDED: null,
   FEED_EVENT_REMOVED: null,
   FEED_EVENT_UPDATED: null,
+  FEED_EVENT_VIEW: null,
   FEED_EVENTS: null,
-  FEED_EVENTS_VIEWED: null,
-  FEED_EVENTS_FETCH: null,
-  FEED_SETTINGS: null,
-  FEED_SETTINGS_FETCH: null
+  FEED_EVENTS_FETCH: null
 })
