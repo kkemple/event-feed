@@ -12,7 +12,7 @@ import admin from './plugins/admin'
 // import feed from './plugins/feed'
 import orm from './plugins/orm'
 import sockets from './plugins/sockets'
-// import twitter from './plugins/twitter'
+import twitter from './plugins/twitter'
 
 type HapiPluginOptions = {}
 
@@ -79,12 +79,12 @@ const statsdOptions: StatsdOptions = {
   port: 8025
 }
 
-// const twitterOptions: TwitterOptions = {
-//   consumerKey: process.env.TWITTER_CONSUMER_KEY,
-//   consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
-//   accessToken: process.env.TWITTER_ACCESS_TOKEN,
-//   accessSecret: process.env.TWITTER_ACCESS_SECRET
-// }
+const twitterOptions: TwitterOptions = {
+  consumerKey: process.env.TWITTER_CONSUMER_KEY,
+  consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+  accessToken: process.env.TWITTER_ACCESS_TOKEN,
+  accessSecret: process.env.TWITTER_ACCESS_SECRET
+}
 
 const plugins: Array<Plugin> = [
   { register: inert },
@@ -96,7 +96,7 @@ const plugins: Array<Plugin> = [
   { register: sockets },
   { register: admin },
   // { register: feed },
-  // { register: twitter, options: twitterOptions }
+  { register: twitter, options: twitterOptions }
 ]
 
 const server = new hapi.Server({

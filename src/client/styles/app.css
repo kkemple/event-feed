@@ -34,28 +34,28 @@ $border-color: #bdc3c7;
 }
 
 /**
- * this is just to set a baseline, all fonts should use rem
- * rem is baseline of 10px, so 3rem = 30px etc...
- * 1rem = 20px
- * 1.4rem = 28px
- * 2.4rem = 48px
- * ...
- */
+* this is just to set a baseline, all fonts should use rem
+* rem is baseline of 10px, so 3rem = 30px etc...
+* 1rem = 20px
+* 1.4rem = 28px
+* 2.4rem = 48px
+* ...
+*/
 html {
   font-size: 125%; /* =20px */
 }
 
 /**
- * set base text size to 16px
- */
+* set base text size to 16px
+*/
 body {
   background-color: #ecf0f1;
   font-size: 0.7rem;
 }
 
 /**
- * i like thin headers
- */
+* i like thin headers
+*/
 h1,
 h2,
 h3,
@@ -299,6 +299,31 @@ h6 {
     top: 0;
     width: 4px;
     z-index: 3;
+
+    &.from::after{
+      display: block;
+      content: "";
+      margin-top: 22px;
+      height: 40px;
+      width: 20px;
+      border-radius: 0 90px 90px 0;
+      -moz-border-radius: 0px 90px 90px 0;
+      -webkit-border-radius: 0px 90px 90px 0;
+      background: $primary-color;
+    }
+
+    &.to::before{
+      display: block;
+      content: "";
+      margin-top: 22px;
+      margin-left: -16px;
+      height: 40px;
+      width: 20px;
+      border-radius: 90px 0px 0px 90px;
+      -moz-border-radius: 90px 0px 0px 90px;
+      -webkit-border-radius: 90px 0px 0px 90px;
+      background: $primary-color;
+    }
 
     &.from {
       left: 0;

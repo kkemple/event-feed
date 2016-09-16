@@ -130,8 +130,6 @@ export default class TimelineFilter extends Component {
       toDraggablePosition
     } = this.state
 
-    console.log('hi')
-
     return (
       <div
         className={`timeline-filter ${classes.join(' ')}`}
@@ -277,22 +275,23 @@ export default class TimelineFilter extends Component {
   }
 
   handleOverlayPinchEvent (e): void|false {
-    const { containerLeft } = this.state
+    const { containerLeft, containerWidth } = this.state
     console.log({...arguments})
-    console.log('hi')
-    const { pageX: fromX } = e.touches[0]
-    const { pageX: toX } = e.touches[1]
-    const distance = e.distance
 
-    // toDo: alphabetize
+    let { pageX: fromX } = e.touches[0].pageX < e.touches[1].pageX ? e.touches[0] : e.touches[1]
+    let { pageX: toX } = e.touches[0].pageX > e.touches[1].pageX ? e.touches[0] : e.touches[1]
 
-    // once state is updated, fetch events
-    this.setState({
+    if (fromX < containerLeft) fromX = containerLeft
+    if (toX > (containerWidth + containerLeft)) toX = containerLeft + containerWidth
+
+    const state = {
       filterFromX: fromX - containerLeft,
-      fromDraggablePosition: { x: fromX, y: 0 },
+      fromDraggablePosition: { x: fromX - containerLeft, y: 0 },
       filterToX: toX - containerLeft,
-      toDraggablePosition: { x: fromX + distance, y: 0 }
-    }, () => this.fetchEvents())
+      toDraggablePosition: { x: -(containerWidth - (toX - containerLeft)), y: 0 }
+    }
+    // once state is updated, fetch events
+    this.setState(state, () => this.fetchEvents())
   }
 
   handleToDragEvent (e, position): void|false {
