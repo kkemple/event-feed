@@ -5,10 +5,12 @@ import isEqual from 'lodash.isequal'
 import moment from 'moment'
 import React, { Component } from 'react'
 import Draggable from 'react-draggable'
+import Pinchable from 'react-tappable/lib/Pinchable'
 
 type Logger = (s: string, ...a: any) => void
 
 type State = {
+  containerLeft: number,
   containerWidth: number,
   duration: number,
   filterFromX: number,
@@ -66,11 +68,13 @@ export default class TimelineFilter extends Component {
 
     this.fetchEvents = debounce(this.fetchEvents.bind(this), 250)
     this.handleFromDragEvent = this.handleFromDragEvent.bind(this)
+    this.handleOverlayPinchEvent = this.handleOverlayPinchEvent.bind(this)
     this.handleToDragEvent = this.handleToDragEvent.bind(this)
     this.updateDimensions = this.updateDimensions.bind(this)
 
     this.state = {
       ...mapTimePropsToState(props),
+      containerLeft: 0,
       containerWidth: 0,
       filterFromX: 0,
       filterToX: 0
@@ -99,9 +103,10 @@ export default class TimelineFilter extends Component {
   }
 
   componentDidMount (): void {
-    const { width } = this.container.getBoundingClientRect()
+    const { width, left } = this.container.getBoundingClientRect()
 
     this.setState({
+      containerLeft: left,
       containerWidth: width,
       filterFromX: 0,
       filterToX: width,
@@ -150,8 +155,8 @@ export default class TimelineFilter extends Component {
           <div className='handle to' />
         </Draggable>
 
-        {this.renderMarkers()}
         {this.renderFilterRangeOverlay()}
+        {this.renderMarkers()}
       </div>
     )
   }
@@ -165,10 +170,15 @@ export default class TimelineFilter extends Component {
     }
 
     return (
-      <div
-        className='filter-range-overlay'
-        style={styles}
-      />
+      <Pinchable
+        onTap={this.handleOverlayPinchEvent}
+        onPinchEnd={this.handleOverlayPinchEvent}>
+
+        <div
+          className='filter-range-overlay'
+          style={styles}
+        />
+      </Pinchable>
     )
   }
 
@@ -264,6 +274,26 @@ export default class TimelineFilter extends Component {
     }, () => this.fetchEvents())
   }
 
+  handleOverlayPinchEvent (e): void|false {
+    const { containerLeft, containerWidth } = this.state
+    console.log({...arguments})
+
+    let { pageX: fromX } = e.touches[0].pageX < e.touches[1].pageX ? e.touches[0] : e.touches[1]
+    let { pageX: toX } = e.touches[0].pageX > e.touches[1].pageX ? e.touches[0] : e.touches[1]
+
+    if (fromX < containerLeft) fromX = containerLeft
+    if (toX > (containerWidth + containerLeft)) toX = containerLeft + containerWidth
+
+    const state = {
+      filterFromX: fromX - containerLeft,
+      fromDraggablePosition: { x: fromX - containerLeft, y: 0 },
+      filterToX: toX - containerLeft,
+      toDraggablePosition: { x: -(containerWidth - (toX - containerLeft)), y: 0 }
+    }
+    // once state is updated, fetch events
+    this.setState(state, () => this.fetchEvents())
+  }
+
   handleToDragEvent (e, position): void|false {
     const { containerWidth, filterFromX } = this.state
     const x = Math.abs(position.x)
@@ -287,7 +317,7 @@ export default class TimelineFilter extends Component {
       toDraggablePosition
     } = this.state
 
-    const { width } = this.container.getBoundingClientRect()
+    const { width, left } = this.container.getBoundingClientRect()
 
     // update slider positions
     const widthPercentageDifference = width / containerWidth
@@ -299,6 +329,7 @@ export default class TimelineFilter extends Component {
 
     this.setState({
       containerWidth: width,
+      containerLeft: left,
       filterFromX: newFilterFromX,
       filterToX: newFilterToX,
       fromDraggablePosition: { x: newFromDraggableX, y: 0 },
