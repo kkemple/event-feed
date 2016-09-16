@@ -102,6 +102,7 @@
     "react-dom": "^15.3.1",
     "react-draggable": "^2.2.1",
     "react-router": "^2.7.0",
+    "react-tappable": "^0.8.4",
     "rethinkdb": "^2.3.2",
     "socket.io": "^1.4.8",
     "socket.io-client": "^1.4.8",
