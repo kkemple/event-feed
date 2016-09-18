@@ -10,19 +10,26 @@ const webpack = require('webpack')
 
 const production = process.env.NODE_ENV === 'production'
 
+// /////////////////////////////////////////////////////////////////////////////
+// Plugin Configuration
+// http://webpack.github.io/docs/list-of-plugins.html
+// /////////////////////////////////////////////////////////////////////////////
+
 // plugins for development builds only
 const devPlugins = [
-  // interpolate index.ejs
+  // interpolate index.ejs to index.html, add assets to html file
   new HtmlWebpackPlugin({
     title: 'Event Feed',
     template: 'src/client/index.ejs',
     inject: 'body',
     filename: 'index.html'
   }),
+
+  // prevent webpack from killing watch on build error
   new webpack.NoErrorsPlugin()
 ]
 
-// http://webpack.github.io/docs/list-of-plugins.html
+// base plugins
 const plugins = [
   // remove build/client dir before compile time
   new CleanWebpackPlugin('build/client'),
@@ -30,10 +37,13 @@ const plugins = [
   // extract path is relative to publicPath `build/client`
   new ExtractTextWebpackPlugin('public/css/app.[hash].css'),
 
-  // optimize chunk occurences
-  new webpack.optimize.OccurenceOrderPlugin(),
+  // build vendor bundle (including common code chunks used in other bundles)
+  new webpack.optimize.CommonsChunkPlugin('vendor', 'public/js/vendor.[hash].js'),
 
-  // define env vars
+  // optimize chunk occurences
+  new webpack.optimize.OccurenceOrderPlugin(true),
+
+  // define env vars for application (shim for process.env)
   new webpack.DefinePlugin({
     'process.env': {
       BABEL_ENV: JSON.stringify(process.env.NODE_ENV),
@@ -41,6 +51,7 @@ const plugins = [
     }
   }),
 
+  // make service worker available to application
   new ServiceWorkerWebpackPlugin({
     entry: path.join(__dirname, 'src/client/sw.js'),
     filename: 'sw.js',
@@ -54,8 +65,13 @@ const plugins = [
 
 // plugins for production builds only
 const prodPlugins = [
+  // remove duplicate chunks
   new webpack.optimize.DedupePlugin(),
-  new webpack.optimize.MinChunkSizePlugin({ minChunkSize: 51200 }), // ~50kb
+
+  // make sure we don't create too small chunks, merge together chunks smallert than 10kb
+  new webpack.optimize.MinChunkSizePlugin({ minChunkSize: 10240 }), // ~10kb
+
+  // minify the crap out of this thing
   new webpack.optimize.UglifyJsPlugin({
     mangle: true,
     compress: {
@@ -63,6 +79,8 @@ const prodPlugins = [
       warnings: false
     }
   }),
+
+  // interpolate index.ejs to index.html, add assets to html file
   new HtmlWebpackPlugin({
     title: 'Event Feed',
     template: 'src/client/index.ejs',
@@ -78,13 +96,34 @@ const prodPlugins = [
 module.exports = {
   debug: !production,
 
-  // inline-source-map makes devtools point to source files
-  devtool: production ? false : 'inline-source-map',
+  // eval-source-map makes devtools point to source files
+  devtool: production ? false : 'eval-source-map',
 
-  entry: './src/client/index.js',
+  entry: {
+    // actual application code
+    app: './src/client/index.js',
+
+    // all third-party NPM modules should be added here
+    vendor: [
+      'debug',
+      'keymirror',
+      'lodash.debounce',
+      'lodash.isequal',
+      'lodash.throttle',
+      'moment',
+      'pouchdb',
+      'react',
+      'react-datepicker',
+      'react-dom',
+      'react-draggable',
+      'react-router',
+      'react-tappable',
+      'socket.io-client'
+    ]
+  },
 
   module: {
-    // handle linting before compile step, fail faster
+    // handle linting before compile step
     preLoaders: [
       {
         exclude: /node_modules/,
@@ -95,8 +134,8 @@ module.exports = {
 
     // set module loaders
     loaders: [
-      // import es6 and convert to commonJS, also transpile React components
-      // see .babelrc for config
+      // import es6 and convert to commonJS, also transpile React components and flow typing
+      // see babel section of package.json for config
       {
         exclude: /node_modules/,
         loader: 'babel',
@@ -127,8 +166,8 @@ module.exports = {
 
   // where to output, also naming conventions
   output: {
-    chunkFilename: '[name].[hash].js',
-    filename: 'public/js/app.[hash].js',
+    chunkFilename: 'public/js/[name].[hash].js',
+    filename: 'public/js/[name].[hash].js',
     path: 'build/client'
   },
 
