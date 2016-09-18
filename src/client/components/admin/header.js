@@ -2,10 +2,14 @@ import React, { Component } from 'react'
 
 export default class AppHeader extends Component {
   render (): void {
-    const { classes, title, children } = this.props
+    const { classes, offline, title, children } = this.props
+    const connectionState = offline ? 'offline' : 'online'
+
     return (
-      <div className={`app-header ${classes.join(' ')}`}>
-        <h1>{title}</h1>
+      <div className={`admin-header ${classes.join(' ')}`}>
+        <h1>
+          {title} <span className={connectionState} title={connectionState} />
+        </h1>
         {children}
       </div>
     )

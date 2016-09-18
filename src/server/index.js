@@ -137,6 +137,15 @@ server.register(plugins, error => {
       }
     },
 
+    // register route for service worker
+    {
+      method: 'GET',
+      path: '/sw.js',
+      handler (request, reply) {
+        reply.file('sw.js').type('text/javascript')
+      }
+    },
+
     // register catch all route for the SPA
     {
       method: 'GET',

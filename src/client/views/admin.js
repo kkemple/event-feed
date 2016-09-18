@@ -30,6 +30,7 @@ export default class AdminView extends Component {
     const { settingsActive } = this.state
     const {
       events,
+      offline,
       onFilterDateRange,
       onPublish,
       onUnpublish,
@@ -42,6 +43,7 @@ export default class AdminView extends Component {
       <div className='admin-view'>
         <AdminHeader
           classes={['admin']}
+          offline={offline}
           title='Event Feed'>
 
           <SettingsToggle

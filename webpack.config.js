@@ -1,7 +1,10 @@
+const path = require('path')
+
 const autoprefixer = require('autoprefixer')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 const ExtractTextWebpackPlugin = require('extract-text-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin')
 const precss = require('precss')
 const webpack = require('webpack')
 
@@ -9,6 +12,13 @@ const production = process.env.NODE_ENV === 'production'
 
 // plugins for development builds only
 const devPlugins = [
+  // interpolate index.ejs
+  new HtmlWebpackPlugin({
+    title: 'Event Feed',
+    template: 'src/client/index.ejs',
+    inject: 'body',
+    filename: 'index.html'
+  }),
   new webpack.NoErrorsPlugin()
 ]
 
@@ -31,12 +41,14 @@ const plugins = [
     }
   }),
 
-  // interpolate index.ejs
-  new HtmlWebpackPlugin({
-    title: 'Event Feed',
-    template: 'src/client/index.ejs',
-    inject: 'body',
-    filename: 'index.html'
+  new ServiceWorkerWebpackPlugin({
+    entry: path.join(__dirname, 'src/client/sw.js'),
+    filename: 'sw.js',
+    excludes: [
+      '**/.*',
+      '**/*.map',
+      '*.html'
+    ]
   })
 ]
 
@@ -49,6 +61,16 @@ const prodPlugins = [
     compress: {
       // Suppress uglification warnings
       warnings: false
+    }
+  }),
+  new HtmlWebpackPlugin({
+    title: 'Event Feed',
+    template: 'src/client/index.ejs',
+    inject: 'body',
+    filename: 'index.html',
+    minify: {
+      removeComments: true,
+      collapseWhitespace: true
     }
   })
 ]

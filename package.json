@@ -97,6 +97,7 @@
     "moment": "^2.14.1",
     "normalize.css": "^4.2.0",
     "pino": "^2.8.3",
+    "pouchdb": "^6.0.4",
     "react": "^15.3.1",
     "react-datepicker": "^0.29.0",
     "react-dom": "^15.3.1",
@@ -104,6 +105,7 @@
     "react-router": "^2.7.0",
     "react-tappable": "^0.8.4",
     "rethinkdb": "^2.3.2",
+    "serviceworker-webpack-plugin": "^0.1.5",
     "socket.io": "^1.4.8",
     "socket.io-client": "^1.4.8",
     "twitter": "^1.4.0"
