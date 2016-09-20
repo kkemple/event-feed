@@ -61,7 +61,7 @@ export default class FeedProvider extends Component {
       type: constants.sockets.CONNECT_FEED
     })
 
-    const intervalId = setInterval(this.refreshEvent, 1000);
+    const intervalId = setInterval(this.refreshEvent, 5000);
     this.setState({intervalId: intervalId});
   }
 
@@ -82,8 +82,13 @@ export default class FeedProvider extends Component {
   }
 
   refreshEvent (): void {
-    const { eventIndex } = this.state
-    this.setState({eventIndex: eventIndex + 1})
+    const { events, eventIndex } = this.state
+
+    if (events.length == eventIndex - 1) {
+      this.setState({eventIndex: 0})
+    } else {
+      this.setState({eventIndex: eventIndex + 1})
+    }
   }
 
   render (): void {
