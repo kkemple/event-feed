@@ -92,7 +92,7 @@ export default class AdminProvider extends Component {
     this.state = { events: [], offline: true, settings: {} }
   }
 
-  async componentDidMount (): void {
+  componentDidMount (): void {
     this.socket.on('connect', this.handleInternetConnection)
     this.socket.on('disconnect', this.handleInternetDisconnect)
     this.socket.on('message', this.handleSocketMessage)
@@ -104,14 +104,22 @@ export default class AdminProvider extends Component {
       type: constants.sockets.CONNECT_ADMIN
     })
 
-    try {
-      const settings = await cache.get('settings')
-      const events = await cache.get('events')
+    window.requestAnimationFrame(async () => {
+      try {
+        const settings = await cache.get('settings')
 
-      this.setState({ events: events.events, settings: settings.settings })
-    } catch (error) {
-      console.warn('Unable to load events or settings from cache!', error)
-    }
+        this.setState({ settings: settings.settings })
+      } catch (error) {
+        console.warn('Unable to load settings from cache!', error)
+      }
+
+      try {
+        const events = await cache.get('events')
+        this.setState({ events: events.events })
+      } catch (error) {
+        console.warn('Unable to load events from cache!', error)
+      }
+    })
   }
 
   componentWillUnmount (): void {
@@ -141,7 +149,7 @@ export default class AdminProvider extends Component {
   handleConnectedAdminEvent (): void {
     logger('[handleInternetConnection] connected to admin room, waiting for updates...')
     this.socket.emit('message', {
-      type: constants.sockets.ADMIN_EVENTS_FETCH
+      type: constants.sockets.ADMIN_SETTINGS_FETCH
     })
   }
 

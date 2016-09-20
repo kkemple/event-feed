@@ -101,8 +101,10 @@ export default class Events {
 
       let query: r.table = this.events
 
+      logger('[fetch] fetching with options: ', options)
+
       // create initial query by filtering within given range
-      if (typeof from !== undefined && typeof to !== undefined) {
+      if (from && to) {
         query = query
           .filter(event => r.ISO8601(event('timestamp'))
             .during(

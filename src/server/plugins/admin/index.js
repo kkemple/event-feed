@@ -56,7 +56,7 @@ const plugin = {
             try {
               logger('[socket] received events fetch request', payload)
 
-              const data = await events.fetch(payload)
+              const data = await events.fetch(payload || {})
 
               socket.emit('message', {
                 payload: data,
