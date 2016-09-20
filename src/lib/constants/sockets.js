@@ -18,7 +18,7 @@ export default keymirror({
   ADMIN_SETTINGS_UPDATED: null,
 
   // feed events
-  CONNET_FEED: null,
+  CONNECT_FEED: null,
   CONNECTED_FEED: null,
   FEED_EVENT_ADDED: null,
   FEED_EVENT_REMOVED: null,
