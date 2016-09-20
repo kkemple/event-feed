@@ -10,14 +10,12 @@ const logger: Logger = debug('views:feed')
 
 export default class FeedView extends Component {
   render (): void {
-    const { events } = this.props
+    const { event } = this.props
 
-    logger('[view] events length', events.length)
-
-    return events.length ? (
+    return event ? (
       <div className='feed-view'>
         <FeedItem
-          event={events[0]}
+          event={event}
         />
       </div>
     ) : (
