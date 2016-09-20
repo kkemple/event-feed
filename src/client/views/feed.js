@@ -1,11 +1,11 @@
-// import debug from 'debug'
+import debug from 'debug'
 import React, { Component } from 'react'
 
 import FeedItem from '../components/feed/item'
 
-// type Logger = (s: string, ...a: any) => void
+type Logger = (s: string, ...a: any) => void
 
-// const logger: Logger = debug('views:feed')
+const logger: Logger = debug('views:feed')
 
 export default class FeedView extends Component {
   render (): void {
@@ -13,10 +13,12 @@ export default class FeedView extends Component {
       events
     } = this.props
 
+    logger('[view] events length', events.length)
+
     return (
       <div className='feed-view'>
         <FeedItem
-          event={events[0]}
+          // event={events[0]}
         />
       </div>
     )

@@ -28,7 +28,21 @@ type Socket = {
   on: (event: string, cb: (d?: any) => void) => void
 }
 
+type FetchOptions = {
+  from: Date,
+  to: Date,
+  published: Boolean,
+  viewed: Boolean
+}
+
 const logger: Logger = debug('server:plugins:feed')
+
+const fetchOptions: FetchOptions = {
+  from: '2016-09-17T17:26:17+00:00',
+  to: '2016-09-20T17:26:17+00:00',
+  published: true,
+  viewed: false
+}
 
 const plugin = {
   async register (
@@ -46,16 +60,16 @@ const plugin = {
         switch (type) {
           case constants.sockets.FEED_EVENTS_FETCH:
             try {
-              logger('[socket] received events fetch request', payload)
+              logger('[socket] received events fetch request')
 
-              const data = await events.fetch(payload)
+              const data = await events.fetch(fetchOptions)
 
               socket.emit('message', {
                 payload: data,
                 type: constants.sockets.FEED_EVENTS
               })
 
-              logger('[socket] fetched events', payload, data)
+              logger('[socket] fetched events', data)
             } catch (error) {
               logger('[Error] Error fetching events: ', error)
             }
@@ -71,7 +85,7 @@ const plugin = {
             break
 
           case constants.sockets.CONNECT_FEED:
-            socket.join('admin')
+            socket.join('feed')
 
             socket.emit('message', {
               type: constants.sockets.CONNECTED_FEED

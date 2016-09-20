@@ -36,10 +36,10 @@ export default class FeedProvider extends Component {
   constructor (): void {
     super(...arguments)
 
+    this.handleSocketMessage = this.handleSocketMessage.bind(this)
     this.handleInternetConnection = this.handleInternetConnection.bind(this)
     this.handleInternetDisconnect = this.handleInternetDisconnect.bind(this)
     this.handleInternetReconnect = this.handleInternetReconnect.bind(this)
-    this.handleSocketMessage = this.handleSocketMessage.bind(this)
 
     this.socket = io()
     this.state = { events: [] }
@@ -47,7 +47,6 @@ export default class FeedProvider extends Component {
 
   componentDidMount (): void {
     this.socket.on('message', this.handleSocketMessage)
-
     this.socket.on('connect', this.handleInternetConnection)
     this.socket.on('disconnect', this.handleInternetDisconnect)
     this.socket.on('reconnect', this.handleInternetReconnect)
@@ -62,7 +61,6 @@ export default class FeedProvider extends Component {
 
   componentWillUnmount (): void {
     this.socket.off('message', this.handleSocketMessage)
-
     this.socket.off('connect', this.handleInternetConnection)
     this.socket.off('disconnect', this.handleInternetDisconnect)
     this.socket.off('reconnect', this.handleInternetReconnect)
@@ -76,6 +74,13 @@ export default class FeedProvider extends Component {
     return <FeedView
       events={events}
     />
+  }
+
+  handleConnectedFeedEvent (): void {
+    logger('[socket] connected to feed room, waiting for updates...')
+    this.socket.emit('message', {
+      type: constants.sockets.FEED_EVENTS_FETCH
+    })
   }
 
   handleEventsEvent (events): void {
@@ -108,13 +113,6 @@ export default class FeedProvider extends Component {
     events.forEach(e => { if (e.id === event.id) e = event })
 
     this.setState({ events })
-  }
-
-  handleConnectedFeedEvent (): void {
-    logger('[socket] connected to feed room, waiting for updates...')
-    this.socket.emit('message', {
-      type: constants.sockets.FEED_EVENTS_FETCH
-    })
   }
 
   handleSocketMessage (message) {
