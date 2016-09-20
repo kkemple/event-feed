@@ -1,64 +1,108 @@
-// import constants from 'constants'
+import constants from 'constants'
 import debug from 'debug'
 import io from 'socket.io-client'
 import React, { Component } from 'react'
 
 import FeedView from '../views/feed'
 
+type EventSchema = {
+  content: string,
+  media: {
+    type: "photo"|"video",
+    url: string
+  },
+  provider: string,
+  published: boolean,
+  timestamp: Date,
+  viewed: boolean
+}
+
+type Socket = {
+  on: (event: string, cb: (d?: any) => void) => void
+}
+
+type State = {
+  events: Array<EventSchema>,
+  intervalId: number,
+  eventIndex: number
+}
+
 type Logger = (s: string, ...a: any) => void
 
-const logger: Logger = debug('client:provider:admin')
+const logger: Logger = debug('client:provider:feed')
 
-export default class AdminProvider extends Component {
-  socket: Object
-  state: Object
+export default class FeedProvider extends Component {
+  socket: Socket
+  state: State
 
   constructor (): void {
     super(...arguments)
 
-    this.handleSocketConnection = this.handleSocketConnection.bind(this)
-    this.handleEventsEvent = this.handleEventsEvent.bind(this)
-    this.handleEventAddedEvent = this.handleEventAddedEvent.bind(this)
-    this.handleEventRemovedEvent = this.handleEventRemovedEvent.bind(this)
-    this.handleEventUpdatedEvent = this.handleEventUpdatedEvent.bind(this)
-    this.handleSettingsUpdatedEvent = this.handleSettingsUpdatedEvent.bind(this)
+    this.handleSocketMessage = this.handleSocketMessage.bind(this)
+    this.handleInternetConnection = this.handleInternetConnection.bind(this)
+    this.handleInternetDisconnect = this.handleInternetDisconnect.bind(this)
+    this.handleInternetReconnect = this.handleInternetReconnect.bind(this)
+    this.refreshEvent = this.refreshEvent.bind(this)
 
     this.socket = io()
-    this.state = { events: [], settings: {} }
+    this.state = { events: [], intervalId: 0, eventIndex: 0 }
   }
 
   componentDidMount (): void {
-    // add listeners
-    // this.socket.on(constants.sockets.CONNECTED_FEED, this.handleSocketConnection)
-    // this.socket.on(constants.sockets.EVENTS, this.handleEventsEvent)
-    // this.socket.on(constants.sockets.EVENT_ADDED, this.handleEventAddedEvent)
-    // this.socket.on(constants.sockets.EVENT_REMOVED, this.handleEventRemovedEvent)
-    // this.socket.on(constants.sockets.EVENT_UPDATED, this.handleEventUpdatedEvent)
-    // this.socket.on(constants.sockets.SETTINGS_UPDATED, this.handleSettingsUpdatedEvent)
+    this.socket.on('message', this.handleSocketMessage)
+    this.socket.on('connect', this.handleInternetConnection)
+    this.socket.on('disconnect', this.handleInternetDisconnect)
+    this.socket.on('reconnect', this.handleInternetReconnect)
 
-    // connect to admin room
-    // this.socket.emit(constants.sockets.CONNECT_FEED)
+    window.addEventListener('online', this.handleInternetReconnect)
+    window.addEventListener('offline', this.handleInternetDisconnect)
 
-    // request initial data
-    window.requestAnimationFrame(() => {
-      // this.socket.emit(constants.sockets.SETTINGS_FETCH)
-      // this.socket.emit(constants.sockets.EVENTS_FETCH)
+    this.socket.emit('message', {
+      type: constants.sockets.CONNECT_FEED
     })
+
+    const intervalId = setInterval(this.refreshEvent, 5000);
+    this.setState({intervalId: intervalId});
   }
 
   componentWillUnmount (): void {
-    // remove listeners
-    // this.socket.off(constants.sockets.CONNECTED_FEED, this.handleSocketConnection)
-    // this.socket.off(constants.sockets.EVENTS, this.handleEventsEvent)
-    // this.socket.off(constants.sockets.EVENT_ADDED, this.handleEventAddedEvent)
-    // this.socket.off(constants.sockets.EVENT_REMOVED, this.handleEventRemovedEvent)
-    // this.socket.off(constants.sockets.EVENTS_UPDATED, this.handleEventUpdatedEvent)
-    // this.socket.off(constants.sockets.SETTINGS_UPDATED, this.handleSettingsUpdatedEvent)
+    this.socket.off('message', this.handleSocketMessage)
+    this.socket.off('connect', this.handleInternetConnection)
+    this.socket.off('disconnect', this.handleInternetDisconnect)
+    this.socket.off('reconnect', this.handleInternetReconnect)
+
+    window.removeEventListener('online', this.handleInternetReconnect)
+    window.removeEventListener('offline', this.handleInternetDisconnect)
+
+    clearInterval(this.state.intervalId);
+  }
+
+  componentWillReceiveProps (nextProps: Object): void {
+    this.setState({events: nextProps.events});
+  }
+
+  refreshEvent (): void {
+    const { events, eventIndex } = this.state
+
+    if (events.length == eventIndex - 1) {
+      this.setState({eventIndex: 0})
+    } else {
+      this.setState({eventIndex: eventIndex + 1})
+    }
   }
 
   render (): void {
-    const { events, settings } = this.state
-    return <FeedView events={events} settings={settings} />
+    const { events, eventIndex } = this.state
+    return <FeedView
+      event={events[eventIndex]}
+    />
+  }
+
+  handleConnectedFeedEvent (): void {
+    logger('[socket] connected to feed room, waiting for updates...')
+    this.socket.emit('message', {
+      type: constants.sockets.FEED_EVENTS_FETCH
+    })
   }
 
   handleEventsEvent (events): void {
@@ -93,13 +137,39 @@ export default class AdminProvider extends Component {
     this.setState({ events })
   }
 
-  handleSettingsUpdatedEvent (settings): void {
-    logger('[socket] settings updated...', settings)
+  handleSocketMessage (message) {
+    const { payload, type } = message
 
-    this.setState({ settings })
+    logger('[handleSocketMessage] type: %s, payload: ', type, payload)
+
+    switch (type) {
+      case constants.sockets.FEED_EVENTS:
+        this.handleEventsEvent(payload)
+        break
+      case constants.sockets.FEED_EVENT_ADDED:
+        this.handleEventAddedEvent(payload)
+        break
+      case constants.sockets.FEED_EVENT_UPDATED:
+        this.handleEventUpdatedEvent(payload)
+        break
+      case constants.sockets.FEED_EVENT_REMOVED:
+        this.handleEventRemovedEvent(payload)
+        break
+      case constants.sockets.CONNECTED_FEED:
+        this.handleConnectedFeedEvent(payload)
+        break
+    }
   }
 
-  handleSocketConnection (): void {
-    logger('[socket] connected to feed room, waiting for updates...')
+  handleInternetConnection (): void {
+    this.setState({ offline: false })
+  }
+
+  handleInternetDisconnect (): void {
+    this.setState({ offline: true })
+  }
+
+  handleInternetReconnect (): void {
+    this.setState({ offline: false })
   }
 }

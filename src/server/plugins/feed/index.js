@@ -28,7 +28,21 @@ type Socket = {
   on: (event: string, cb: (d?: any) => void) => void
 }
 
+type FetchOptions = {
+  from: Date,
+  to: Date,
+  published: Boolean,
+  viewed: Boolean
+}
+
 const logger: Logger = debug('server:plugins:feed')
+
+const fetchOptions: FetchOptions = {
+  from: '2016-09-17T17:26:17+00:00',
+  to: '2016-09-20T17:26:17+00:00',
+  published: true,
+  viewed: false
+}
 
 const plugin = {
   async register (
@@ -40,48 +54,78 @@ const plugin = {
     const { events } = server.plugins.orm
 
     io.on('connection', socket => {
-      socket.on(constants.sockets.CONNECT_FEED, async () => {
-        socket.join('feed')
+      socket.on('message', async message => {
+        const { type, payload } = message
 
-        socket.on(constants.sockets.FEED_EVENTS_FETCH, async () => {
-          try {
-            logger('[socket] received events fetch request')
-            const data = await events.fetch({ published: true })
-            socket.emit(constants.sockets.FEED_EVENTS, data)
-            logger('[socket] fetched events', options, data)
-          } catch (error) {
-            logger('[Error] Error fetching events: ', error)
-          }
-        })
+        switch (type) {
+          case constants.sockets.FEED_EVENTS_FETCH:
+            try {
+              logger('[socket] received events fetch request')
 
-        socket.on(constants.sockets.FEED_EVENT_VIEW, async id => {
-          try {
-            await events.update(id, { viewed: true })
-            logger('[socket] published event: %s', id)
-          } catch (error) {
-            logger('[Error] Error publishing event: %s', id, error)
-          }
-        })
+              const data = await events.fetch(fetchOptions)
 
-        events.onChange(data => {
-          const { old_val: oldVal, new_val: newVal } = data
+              socket.emit('message', {
+                payload: data,
+                type: constants.sockets.FEED_EVENTS
+              })
 
-          if (!newVal && oldVal.published) {
-            const { id } = oldVal
+              logger('[socket] fetched events', data)
+            } catch (error) {
+              logger('[Error] Error fetching events: ', error)
+            }
+            break
 
-            socket.emit(constants.sockets.FEED_EVENT_REMOVED, id)
-            logger('[onEventChange] event removed %s', id)
-          } else if (!oldVal && newVal.published) {
-            socket.emit(constants.sockets.FEED_EVENT_ADDED, newVal)
-            logger('[onEventChange] new event added...')
-          } else if (newVal && oldVal) {
-            socket.emit(constants.sockets.FEED_EVENT_UPDATED, newVal)
-            logger('[onEventChange] event updated...')
-          }
-        })
+          case constants.sockets.FEED_EVENT_VIEW:
+            try {
+              await events.update(id, { viewed: true })
+              logger('[socket] published event: %s', id)
+            } catch (error) {
+              logger('[Error] Error publishing event: %s', id, error)
+            }
+            break
 
-        socket.emit(constants.sockets.CONNECTED_FEED)
-        logger('[socket] joined feed room...')
+          case constants.sockets.CONNECT_FEED:
+            socket.join('feed')
+
+            socket.emit('message', {
+              type: constants.sockets.CONNECTED_FEED
+            })
+
+            logger('[socket] joined feed room...')
+            break
+
+          default:
+            console.warn('No handler for message type: ', type)
+          break
+        }
+      })
+
+      events.onChange(data => {
+        const { old_val: oldVal, new_val: newVal } = data
+
+        if (!newVal && oldVal.published) {
+          const { id } = oldVal
+
+          socket.emit('message', {
+            payload: id,
+            type: constants.sockets.FEED_EVENT_REMOVED
+          })
+          logger('[onEventChange] event removed %s', id)
+
+        } else if (!oldVal && newVal.published) {
+          socket.emit('message', {
+            payload: newVal,
+            type: constants.sockets.FEED_EVENT_ADDED
+          })
+          logger('[onEventChange] new event added...')
+
+        } else if (newVal && oldVal) {
+          socket.emit('message', {
+            payload: newVal,
+            type: constants.sockets.FEED_EVENT_UPDATED
+          })
+          logger('[onEventChange] event updated...')
+        }
       })
     })
 
