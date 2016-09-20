@@ -11,14 +11,14 @@ export default class Event extends Component {
   }
 
   render () {
-    const { event, onPublish, onUnpublish, onRemove } = this.props
+    const { event, offline, onPublish, onUnpublish, onRemove } = this.props
 
     return (
       <div key={event.id} className='event'>
         <div className='content'>
           {
             event.media
-              ? <LazyRender><img src={event.media.url} /></LazyRender>
+              ? <LazyRender><img src={event.media.url.replace('http:', '')} /></LazyRender>
               : null
           }
 
@@ -34,6 +34,7 @@ export default class Event extends Component {
 
           <EventActions
             itemId={event.id}
+            offline={offline}
             onPublish={onPublish}
             onUnpublish={onUnpublish}
             onRemove={onRemove}

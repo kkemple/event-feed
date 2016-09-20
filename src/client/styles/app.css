@@ -84,18 +84,14 @@ h6 {
     padding: 30px 0;
 
     span {
-      border-radius: 50%;
       display: inline-block;
-      height: 10px;
+      height: 20px;
+      margin-left: 10px;
       vertical-align: middle;
-      width: 10px;
+      width: 20px;
 
-      &.offline {
-        background-color: #f1c40f;
-      }
-
-      &.online {
-        background-color: #2ecc71;
+      img {
+        width: 100%;
       }
     }
   }

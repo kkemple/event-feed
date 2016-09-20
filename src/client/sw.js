@@ -8,7 +8,7 @@
  */
 const { assets } = global.serviceWorkerOption
 
-const CACHE_NAME = 'v0.0.5'
+const CACHE_NAME = 'v0.0.9'
 
 let assetsToCache = [
   ...assets,
@@ -52,7 +52,7 @@ self.addEventListener('activate', (event) => {
   )
 })
 
-self.addEventListener('message', (event) => {
+self.addEventListener('message', event => {
   switch (event.data.action) {
     case 'skipWaiting':
       if (self.skipWaiting) {

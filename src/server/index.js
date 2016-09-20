@@ -146,6 +146,15 @@ server.register(plugins, error => {
       }
     },
 
+    // register route for service worker
+    {
+      method: 'GET',
+      path: '/manifest.json',
+      handler (request, reply) {
+        reply.file('manifest.json').type('application/json')
+      }
+    },
+
     // register catch all route for the SPA
     {
       method: 'GET',

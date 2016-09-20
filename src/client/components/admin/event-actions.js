@@ -21,7 +21,7 @@ export default class EventActions extends Component {
   }
 
   render (): void {
-    const { published, viewed } = this.props
+    const { offline, published, viewed } = this.props
 
     return (
       <div className='actions'>
@@ -40,23 +40,34 @@ export default class EventActions extends Component {
         }
 
         {
-          published
-            ? (
-            <span className='published' onClick={this.handleUnpublishEvent}>
-              <img src={publishedIcon} />
-            </span>
-            )
-            : (
-            <span className='publish' onClick={this.handlePublishEvent}>
-              <img src={publishIcon} />
-            </span>
-            )
+          offline
+            ? null
+            : this.renderPublish(published)
         }
-        <span className='remove' onClick={this.handleRemoveEvent}>
-          <img src={removeIcon} />
-        </span>
+
+        {
+          offline
+            ? null
+            : <span className='remove' onClick={this.handleRemoveEvent}>
+              <img src={removeIcon} />
+            </span>
+        }
       </div>
     )
+  }
+
+  renderPublish (isPublished: boolean): Component {
+    return isPublished
+      ? (
+      <span className='published' onClick={this.handleUnpublishEvent}>
+        <img src={publishedIcon} />
+      </span>
+      )
+      : (
+      <span className='publish' onClick={this.handlePublishEvent}>
+        <img src={publishIcon} />
+      </span>
+      )
   }
 
   handlePublishEvent (): void {

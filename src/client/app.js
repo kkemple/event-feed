@@ -14,9 +14,7 @@ const logger: Logger = debug('client:app')
 export default class App extends Component {
   componentDidMount ():void {
     // bootstrap service worker if supported
-    if ('serviceWorker' in navigator &&
-      (window.location.protocol === 'https:' ||
-        window.location.hostname === 'localhost')) {
+    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
       const registration = runtime.register()
 
       registerEvents(registration, {

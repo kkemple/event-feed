@@ -1,8 +1,21 @@
 <html lang='en'>
   <head>
-      <title><%= htmlWebpackPlugin.options.title %></title>
-      <meta charset="utf-8">
-      <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title><%= htmlWebpackPlugin.options.title %></title>
+    <meta charset="utf-8">
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <!--  tell browser about manifest file -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- add to home screen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Event Feed">
+    <link rel="apple-touch-icon" href="img/icon-152x152.png">
+
+    <!-- add to home screen for Microsoft -->
+    <meta name="msapplication-TileImage" content="img/icon-144x144.png">
+    <meta name="msapplication-TileColor" content="#9b59b6">
   </head>
 
   <body>

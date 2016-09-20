@@ -2,6 +2,7 @@ const path = require('path')
 
 const autoprefixer = require('autoprefixer')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ExtractTextWebpackPlugin = require('extract-text-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin')
@@ -33,6 +34,15 @@ const devPlugins = [
 const plugins = [
   // remove build/client dir before compile time
   new CleanWebpackPlugin('build/client'),
+
+  // copy static PWA assets
+  new CopyWebpackPlugin([
+    // copy manifest.json for app install
+    { from: 'src/client/manifest.json' },
+
+    // copy icon images for save to home screen and splash screen
+    { from: 'src/client/assets/app-install-icons', to: 'public/img' }
+  ]),
 
   // extract path is relative to publicPath `build/client`
   new ExtractTextWebpackPlugin('public/css/app.[hash].css'),
@@ -96,8 +106,8 @@ const prodPlugins = [
 module.exports = {
   debug: !production,
 
-  // eval-source-map makes devtools point to source files
-  devtool: production ? false : 'eval-source-map',
+  // inline-source-map makes devtools point to source files
+  devtool: production ? false : 'inline-source-map',
 
   entry: {
     // actual application code

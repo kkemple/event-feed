@@ -58,7 +58,7 @@ export default class EventList extends Component {
 
   render (): void {
     const { containerWidth, itemsToRender } = this.state
-    const { classes, onPublish, onUnpublish, onRemove } = this.props
+    const { classes, offline, onPublish, onUnpublish, onRemove } = this.props
 
     const COLUMN_COUNT: number = containerWidth > 800
       ? Math.floor(containerWidth / COLUMN_WIDTH)
@@ -91,6 +91,7 @@ export default class EventList extends Component {
                     <Event
                       key={e.id}
                       event={e}
+                      offline={offline}
                       onPublish={onPublish}
                       onUnpublish={onUnpublish}
                       onRemove={onRemove}
