@@ -69,6 +69,13 @@ export default class FeedProvider extends Component {
     window.removeEventListener('offline', this.handleInternetDisconnect)
   }
 
+  componentWillReceiveProps (nextProps: Object): void {
+    logger('[component] things')
+    this.setState({
+      events: nextProps.events
+    });
+  }
+
   render (): void {
     const { events } = this.state
     return <FeedView

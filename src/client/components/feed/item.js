@@ -8,7 +8,7 @@ export default class Item extends Component {
     const { event } = this.props
 
     return (
-      <div key={event.id} className='event'>
+      <div className='event'>
         <div className='content'>
           {
             event.media
