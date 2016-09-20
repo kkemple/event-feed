@@ -22,8 +22,7 @@ type Socket = {
 }
 
 type State = {
-  events: Array<EventSchema>,
-  offline: boolean
+  events: Array<EventSchema>
 }
 
 type Logger = (s: string, ...a: any) => void
@@ -37,24 +36,17 @@ export default class FeedProvider extends Component {
   constructor (): void {
     super(...arguments)
 
-    this.handleSocketConnection = this.handleSocketConnection.bind(this)
-    this.handleEventsEvent = this.handleEventsEvent.bind(this)
-    this.handleEventAddedEvent = this.handleEventAddedEvent.bind(this)
-    this.handleEventRemovedEvent = this.handleEventRemovedEvent.bind(this)
-    this.handleEventUpdatedEvent = this.handleEventUpdatedEvent.bind(this)
+    this.handleInternetConnection = this.handleInternetConnection.bind(this)
+    this.handleInternetDisconnect = this.handleInternetDisconnect.bind(this)
+    this.handleInternetReconnect = this.handleInternetReconnect.bind(this)
+    this.handleSocketMessage = this.handleSocketMessage.bind(this)
 
     this.socket = io()
     this.state = { events: [] }
   }
 
   componentDidMount (): void {
-    this.socket.emit(constants.sockets.CONNECT_FEED)
-
-    this.socket.on(constants.sockets.FEED_EVENTS, this.handleEventsEvent)
-    this.socket.on(constants.sockets.FEED_EVENT_ADDED, this.handleEventAddedEvent)
-    this.socket.on(constants.sockets.FEED_EVENT_REMOVED, this.handleEventRemovedEvent)
-    this.socket.on(constants.sockets.FEED_EVENT_UPDATED, this.handleEventUpdatedEvent)
-    this.socket.on(constants.sockets.CONNECTED_FEED, this.handleSocketConnection)
+    this.socket.on('message', this.handleSocketMessage)
 
     this.socket.on('connect', this.handleInternetConnection)
     this.socket.on('disconnect', this.handleInternetDisconnect)
@@ -63,18 +55,13 @@ export default class FeedProvider extends Component {
     window.addEventListener('online', this.handleInternetReconnect)
     window.addEventListener('offline', this.handleInternetDisconnect)
 
-    // request initial data
-    window.requestAnimationFrame(() => {
-      this.socket.emit(constants.sockets.FEED_EVENTS_FETCH)
+    this.socket.emit('message', {
+      type: constants.sockets.CONNECT_FEED
     })
   }
 
   componentWillUnmount (): void {
-    this.socket.off(constants.sockets.FEED_EVENTS, this.handleEventsEvent)
-    this.socket.off(constants.sockets.FEED_EVENT_ADDED, this.handleEventAddedEvent)
-    this.socket.off(constants.sockets.FEED_EVENT_REMOVED, this.handleEventRemovedEvent)
-    this.socket.off(constants.sockets.FEED_EVENT_UPDATED, this.handleEventUpdatedEvent)
-    this.socket.off(constants.sockets.CONNECTED_FEED, this.handleSocketConnection)
+    this.socket.off('message', this.handleSocketMessage)
 
     this.socket.off('connect', this.handleInternetConnection)
     this.socket.off('disconnect', this.handleInternetDisconnect)
@@ -85,10 +72,9 @@ export default class FeedProvider extends Component {
   }
 
   render (): void {
-    const { events, offline } = this.state
+    const { events } = this.state
     return <FeedView
       events={events}
-      offline={offline}
     />
   }
 
@@ -124,8 +110,35 @@ export default class FeedProvider extends Component {
     this.setState({ events })
   }
 
-  handleSocketConnection (): void {
+  handleConnectedFeedEvent (): void {
     logger('[socket] connected to feed room, waiting for updates...')
+    this.socket.emit('message', {
+      type: constants.sockets.FEED_EVENTS_FETCH
+    })
+  }
+
+  handleSocketMessage (message) {
+    const { payload, type } = message
+
+    logger('[handleSocketMessage] type: %s, payload: ', type, payload)
+
+    switch (type) {
+      case constants.sockets.FEED_EVENTS:
+        this.handleEventsEvent(payload)
+        break
+      case constants.sockets.FEED_EVENT_ADDED:
+        this.handleEventAddedEvent(payload)
+        break
+      case constants.sockets.FEED_EVENT_UPDATED:
+        this.handleEventUpdatedEvent(payload)
+        break
+      case constants.sockets.FEED_EVENT_REMOVED:
+        this.handleEventRemovedEvent(payload)
+        break
+      case constants.sockets.CONNECTED_FEED:
+        this.handleConnectedFeedEvent(payload)
+        break
+    }
   }
 
   handleInternetConnection (): void {
@@ -139,5 +152,4 @@ export default class FeedProvider extends Component {
   handleInternetReconnect (): void {
     this.setState({ offline: false })
   }
-
 }
