@@ -2,74 +2,77 @@ import moment from 'moment'
 import React, { Component } from 'react'
 
 export default class Item extends Component {
-  state: { imageStyles: Object }
-
-  constructor (): void {
-    super(...arguments)
-
-    this.state = {
-      imageStyles: {}
-    }
-  }
+  // state: { imageStyles: Object }
+  //
+  // constructor (): void {
+  //   super(...arguments)
+  //
+  //   this.state = {
+  //     imageStyles: {}
+  //   }
+  // }
 
   componentDidMount (): void {
-    if (this.image) {
-      this.image.onload = () => {
-        const { height, width } = this.image.getBoundingClientRect()
-
-        if (height > width) {
-          const radius = Math.floor(width / 2)
-          this.setState({
-            imageStyles: {
-              clipPath: `circle(${radius}px at center)`,
-              WebkitClipPath: `circle(${radius}px at center)`,
-              MSClipPath: `circle(${radius}px at center)`
-            }
-          })
-        } else {
-          const radius = Math.floor(height / 2)
-          this.setState({
-            imageStyles: {
-              clipPath: `circle(${radius}px at center)`,
-              WebkitClipPath: `circle(${radius}px at center)`,
-              MSClipPath: `circle(${radius}px at center)`
-            }
-          })
-        }
-      }
-    }
+    // if (this.image) {
+    //   this.image.onload = () => {
+    //     const { height, width } = this.image.getBoundingClientRect()
+    //
+    //     if (height > width) {
+    //       this.setState({
+    //         imageStyles: {
+    //           clipPath: `url(#svgPath)`,
+    //           WebkitClipPath: `url(#svgPath)`,
+    //           MSClipPath: `url(#svgPath)`
+    //         }
+    //       })
+    //     } else {
+    //       this.setState({
+    //         imageStyles: {
+    //           clipPath: `url(#svgPath)`,
+    //           WebkitClipPath: `url(#svgPath)`,
+    //           MSClipPath: `url(#svgPath)`
+    //         }
+    //       })
+    //     }
+    //   }
+    // }
   }
 
   componentDidUpdate (): void {
-    if (this.image) {
-      this.image.onload = () => {
-        const { height, width } = this.image.getBoundingClientRect()
-
-        if (height > width) {
-          const radius = Math.floor(width / 2)
-          this.setState({
-            imageStyles: {
-              clipPath: `circle(${radius}px at center)`,
-              WebkitClipPath: `circle(${radius}px at center)`,
-              MSClipPath: `circle(${radius}px at center)`
-            }
-          })
-        } else {
-          const radius = Math.floor(height / 2)
-          this.setState({
-            imageStyles: {
-              clipPath: `circle(${radius}px at center)`,
-              WebkitClipPath: `circle(${radius}px at center)`,
-              MSClipPath: `circle(${radius}px at center)`
-            }
-          })
-        }
-      }
-    }
+    // if (this.image) {
+    //   this.image.onload = () => {
+    //     const { height, width } = this.image.getBoundingClientRect()
+    //
+    //     if (height > width) {
+    //       const radius = Math.floor(width / 2)
+    //       this.setState({
+    //         imageStyles: {
+    //           clipPath: `url(#svgPath)`,
+    //           WebkitClipPath: `url(#svgPath)`,
+    //           MSClipPath: `url(#svgPath)`
+    //         }
+    //       })
+    //     } else {
+    //       const radius = Math.floor(height / 2)
+    //       this.setState({
+    //         imageStyles: {
+    //           clipPath: `url(#svgPath)`,
+    //           WebkitClipPath: `url(#svgPath)`,
+    //           MSClipPath: `url(#svgPath)`
+    //         }
+    //       })
+    //     }
+    //   }
+    // }
   }
 
   render () {
-    const { imageStyles } = this.state
+    const imageStyles = {
+      clipPath: `url(#svgPath)`,
+      WebkitClipPath: `url(#svgPath)`,
+      MSClipPath: `url(#svgPath)`
+    }
+
     const { event } = this.props
 
     return (
@@ -78,13 +81,11 @@ export default class Item extends Component {
           {
             event.media
               ? (
-              <div className='image-wrapper'>
                 <img
                   ref={ref => { this.image = ref }}
                   src={event.media.url}
                   style={imageStyles}
                 />
-              </div>
               )
               : null
           }

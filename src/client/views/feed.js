@@ -39,7 +39,7 @@ export default class FeedView extends Component {
   render (): void {
     const { eventIndex } = this.state
     const { events } = this.props
-    const event = events[eventIndex]
+    const event = events[0]
 
     return event ? (
       <div className='feed-view'>
