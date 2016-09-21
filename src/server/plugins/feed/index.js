@@ -37,13 +37,6 @@ type FetchOptions = {
 
 const logger: Logger = debug('server:plugins:feed')
 
-const fetchOptions: FetchOptions = {
-  from: '2016-09-17T17:26:17+00:00',
-  to: '2016-09-20T17:26:17+00:00',
-  published: true,
-  viewed: false
-}
-
 const plugin = {
   async register (
     server: HapiServer,
@@ -62,7 +55,7 @@ const plugin = {
             try {
               logger('[socket] received events fetch request')
 
-              const data = await events.fetch(fetchOptions)
+              const data = await events.fetch({ published: true })
 
               socket.emit('message', {
                 payload: data,

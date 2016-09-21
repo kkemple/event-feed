@@ -23,8 +23,6 @@ type Socket = {
 
 type State = {
   events: Array<EventSchema>,
-  intervalId: number,
-  eventIndex: number
 }
 
 type Logger = (s: string, ...a: any) => void
@@ -42,10 +40,9 @@ export default class FeedProvider extends Component {
     this.handleInternetConnection = this.handleInternetConnection.bind(this)
     this.handleInternetDisconnect = this.handleInternetDisconnect.bind(this)
     this.handleInternetReconnect = this.handleInternetReconnect.bind(this)
-    this.refreshEvent = this.refreshEvent.bind(this)
 
     this.socket = io()
-    this.state = { events: [], intervalId: 0, eventIndex: 0 }
+    this.state = { events: [] }
   }
 
   componentDidMount (): void {
@@ -60,9 +57,6 @@ export default class FeedProvider extends Component {
     this.socket.emit('message', {
       type: constants.sockets.CONNECT_FEED
     })
-
-    const intervalId = setInterval(this.refreshEvent, 5000);
-    this.setState({intervalId: intervalId});
   }
 
   componentWillUnmount (): void {
@@ -73,29 +67,15 @@ export default class FeedProvider extends Component {
 
     window.removeEventListener('online', this.handleInternetReconnect)
     window.removeEventListener('offline', this.handleInternetDisconnect)
-
-    clearInterval(this.state.intervalId);
   }
 
   componentWillReceiveProps (nextProps: Object): void {
-    this.setState({events: nextProps.events});
-  }
-
-  refreshEvent (): void {
-    const { events, eventIndex } = this.state
-
-    if (events.length == eventIndex - 1) {
-      this.setState({eventIndex: 0})
-    } else {
-      this.setState({eventIndex: eventIndex + 1})
-    }
+    this.setState({events: nextProps.events})
   }
 
   render (): void {
-    const { events, eventIndex } = this.state
-    return <FeedView
-      event={events[eventIndex]}
-    />
+    const { events } = this.state
+    return <FeedView events={events} />
   }
 
   handleConnectedFeedEvent (): void {
